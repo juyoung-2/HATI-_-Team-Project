@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.hati.admin.mapper.AdminPostMapper">
+
+	<!-- ========================================================= [1] COUNT 
+		(목록 페이징용) - onlyReported=true 면 reports에 target_type='POST' 존재하는 글만 ========================================================= -->
+	<select id="countPosts"
+		parameterType="org.hati.admin.post.domain.AdminPostSearchRequest"
+		resultType="int">
+
+		SELECT COUNT(*)
+		FROM posts p
+		JOIN accounts a ON a.account_id =
+		p.account_id
+		JOIN vw_account_display d ON d.account_id = a.account_id
+		<where>
+			<!-- onlyReported -->
+			<if test="onlyReported">
+				AND EXISTS (
+				SELECT 1
+				FROM reports r
+				WHERE r.target_type =
+				'POST'
+				AND r.target_id = p.post_id
+				)
+			</if>
+
+			<if test="nickname != null and nickname != ''">
+				AND d.nickname LIKE '%' || #{nickname} || '%'
+			</if>
+
+			<if test="handle != null and handle != ''">
+				AND d.handle LIKE '%' || #{handle} || '%'
+			</if>
+
+			<!-- posts.content -->
+			<if test="content != null and content != ''">
+				AND p.content LIKE '%' || #{content} || '%'
+			</if>
+
+			<if test="roleType != null and roleType != ''">
+				AND a.role_type = #{roleType}
+			</if>
+
+			<if test="status != null and status != ''">
+				AND p.status = #{status}
+			</if>
+
+			<!-- 작성일 범위: createdFrom/To는 YYYY-MM-DD -->
+			<if test="createdFrom != null and createdFrom != ''">
+				AND p.created_at &gt;= TO_DATE(#{createdFrom},
+				'YYYY-MM-DD')
+			</if>
+			<if test="createdTo != null and createdTo != ''">
+				AND p.created_at &lt; TO_DATE(#{createdTo}, 'YYYY-MM-DD')
+				+ 1
+			</if>
+		</where>
+	</select>
+
+
+	<!-- ========================================================= [2] LIST 
+		========================================================= -->
+	<select id="selectPosts"
+		parameterType="org.hati.admin.post.domain.AdminPostSearchRequest"
+		resultType="org.hati.admin.post.domain.AdminPostListItemDTO">
+
+		SELECT *
+		FROM (
+		SELECT
+		p.post_id AS postId,
+		a.account_id AS
+		authorAccountId,
+		d.nickname AS nickname,
+		d.handle AS handle,
+		a.role_type
+		AS roleType,
+		p.status AS status,
+		TO_CHAR(p.created_at, 'YYYY-MM-DD
+		HH24:MI:SS') AS createdAt,
+		NVL(rpt.report_total, 0) AS reportTotalCount,
+		NVL(rpt.pending_cnt, 0) AS reportPendingCount,
+		ROW_NUMBER() OVER (
+		ORDER BY
+		<choose>
+			<when test="sort == 'createdAtAsc'"> p.created_at ASC </when>
+			<otherwise> p.created_at DESC </otherwise>
+		</choose>
+		) AS rn
+		FROM posts p
+		LEFT JOIN (
+		SELECT
+		r.target_id AS post_id,
+		COUNT(*) AS
+		report_total,
+		SUM(CASE WHEN r.status = 0 THEN 1 ELSE 0 END) AS
+		pending_cnt
+		FROM reports r
+		WHERE r.target_type = 'POST'
+		GROUP BY
+		r.target_id
+		) rpt ON rpt.post_id = p.post_id
+		JOIN accounts a ON
+		a.account_id =
+		p.account_id
+		JOIN vw_account_display d ON d.account_id =
+		a.account_id
+
+		<where>
+			<if test="onlyReported">
+				AND EXISTS (
+				SELECT 1
+				FROM reports r
+				WHERE r.target_type =
+				'POST'
+				AND r.target_id = p.post_id
+				)
+			</if>
+
+			<if test="nickname != null and nickname != ''">
+				AND d.nickname LIKE '%' || #{nickname} || '%'
+			</if>
+
+			<if test="handle != null and handle != ''">
+				AND d.handle LIKE '%' || #{handle} || '%'
+			</if>
+
+			<if test="content != null and content != ''">
+				AND p.content LIKE '%' || #{content} || '%'
+			</if>
+
+			<if test="roleType != null and roleType != ''">
+				AND a.role_type = #{roleType}
+			</if>
+
+			<if test="status != null and status != ''">
+				AND p.status = #{status}
+			</if>
+
+			<if test="createdFrom != null and createdFrom != ''">
+				AND p.created_at &gt;= TO_DATE(#{createdFrom},
+				'YYYY-MM-DD')
+			</if>
+			<if test="createdTo != null and createdTo != ''">
+				AND p.created_at &lt; TO_DATE(#{createdTo}, 'YYYY-MM-DD')
+				+ 1
+			</if>
+		</where>
+		)
+		WHERE rn BETWEEN ((#{page} - 1) * #{size} + 1)
+		AND (#{page} * #{size})
+	</select>
+
+
+	<!-- ========================================================= [3] DETAIL 
+		(기본정보 탭용, 리스트는 서비스에서 별도 조회) - authorProfileImageUrl: media_files PROFILE 
+		+ author accountId ========================================================= -->
+	<select id="selectPostDetail" parameterType="long"
+		resultType="org.hati.admin.post.domain.AdminPostDetailDTO">
+
+		SELECT
+		p.post_id AS postId,
+		a.account_id AS authorAccountId,
+		d.nickname AS nickname,
+		d.handle AS handle,
+		a.role_type AS roleType,
+		p.status AS status,
+		TO_CHAR(p.created_at, 'YYYY-MM-DD HH24:MI:SS') AS
+		createdAt,
+		p.content AS content,
+
+		mp.url AS authorProfileImageUrl
+
+		FROM
+		posts p
+		JOIN accounts a ON a.account_id = p.account_id
+		JOIN
+		vw_account_display d ON d.account_id = a.account_id
+
+		LEFT JOIN
+		media_files mp
+		ON mp.ref_type = 'PROFILE'
+		AND mp.ref_id = a.account_id
+
+		WHERE p.post_id = #{postId}
+	</select>
+
+
+	<!-- ========================================================= [4] POST 
+		이미지들 (media_files: ref_type='POST', ref_id=post_id) ========================================================= -->
+	<select id="selectPostImageUrls" parameterType="long"
+		resultType="string">
+		SELECT mf.url
+		FROM media_files mf
+		WHERE mf.ref_type = 'POST'
+		AND mf.ref_id = #{postId}
+		ORDER BY mf.created_at ASC
+	</select>
+
+
+	<!-- ========================================================= [5] POST 
+		태그들 (tag_links -> tags.text) - tag_links의 컬럼명/참조 컬럼명은 프로젝트마다 달라서 아래는 가장 흔한 
+		형태로 작성했어. 네 스키마 컬럼명에 맞춰 2~3개만 고치면 됨. ========================================================= -->
+	<select id="selectPostTags" parameterType="long"
+		resultType="string">
+		SELECT t.tag_text AS text
+		FROM tag_links tl
+		JOIN tags t ON
+		t.tag_id = tl.tag_id
+		WHERE tl.post_id = #{postId}
+		ORDER BY t.tag_text
+		ASC
+	</select>
+
+
+	<!-- ========================================================= [6] 숨김 처리 
+		========================================================= -->
+	<update id="hidePost">
+		UPDATE posts
+		SET status = 'HIDDEN'
+		WHERE post_id =
+		#{postId}
+	</update>
+
+</mapper>

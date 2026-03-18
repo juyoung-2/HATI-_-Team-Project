@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.hati.widget.mapper.WeatherMapper">
+
+    <!-- 날씨 타입에 따라 추천 운동 조회 -->
+    <!-- column: ex_clear(맑음) 또는 ex_storm(악천후) -->
+    <select id="selectActivity" resultType="string">
+        SELECT
+            <choose>
+                <when test="column == 'ex_clear'">EX_CLEAR</when>
+                <otherwise>EX_STORM</otherwise>
+            </choose>
+        FROM HATI_MASTER
+        WHERE HATI_CODE = #{hatiCode}
+    </select>
+
+</mapper>

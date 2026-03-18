@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.hati.auth.mapper.TrainerPassProductMapper">
+
+    <insert id="insert" parameterType="org.hati.trainer.vo.TrainerPassProductVO">
+        INSERT INTO trainer_pass_product (account_id, sport_id, total_count, price, base_fee)
+        VALUES (#{trainerAccountId}, #{sportId}, #{totalCount}, #{price}, #{baseFee})
+    </insert>
+
+</mapper>

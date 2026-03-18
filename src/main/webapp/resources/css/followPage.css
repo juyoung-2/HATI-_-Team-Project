@@ -1,0 +1,243 @@
+/* =====================
+ followPage.css
+ - 팔로우 페이지 전용 스타일
+ - home.css와 함께 사용 (레이아웃은 home.css 담당)
+   ===================== */
+
+/* =====================
+   레이아웃
+   ===================== */
+.page-wrapper {
+  height: 100%;
+  overflow-y: auto;
+
+}
+
+.container {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 25px;
+  
+}
+
+/* =====================
+   카드
+   ===================== */
+
+.page-wrapper .card {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 16px;
+  border-bottom: 1px solid #E4E6EB;
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.card-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #050505;
+}
+
+/* =====================
+   탭
+   ===================== */
+.tabs {
+  width: 100%;
+}
+
+.tabs-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  background-color: #ffffff;
+}
+
+.tab-trigger {
+  padding: 12px 8px;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 500;
+  color: #606770;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.tab-trigger:hover {
+  background-color: #E4E6EB;
+}
+
+.tab-trigger.active {
+  background-color: #ffffff;
+  color: #1877F2;
+  font-weight: 600;
+  border-bottom: 2px solid #1877F2;
+}
+
+/* =====================
+   탭 컨텐츠
+   ===================== */
+.tab-content {
+  display: none;
+  padding: 16px;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* =====================
+   리스트
+   ===================== */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* =====================
+   유저 카드
+   ===================== */
+.person-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  border-radius: 8px;
+  transition: background-color 0.15s;
+}
+
+.person-card:hover {
+  background-color: #F9FAFB;
+}
+
+.person-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* =====================
+   아바타
+   ===================== */
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: #E4E6EB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 14px;
+  color: #606770;
+  font-weight: 600;
+}
+
+/* =====================
+   유저 정보
+   ===================== */
+.person-detail {
+  flex: 1;
+  min-width: 0;
+}
+
+.name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.person-nickname {
+  font-size: 14px;
+  font-weight: 600;
+  color: #050505;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.person-handle {
+  font-size: 12px;
+  color: #606770;
+  margin-bottom: 2px;
+}
+
+.person-intro {
+  font-size: 12px;
+  color: #606770;
+}
+
+/* =====================
+   HATI 뱃지
+   ===================== */
+.hati-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+  background-color: #E4E6EB;
+  color: #606770;
+}
+
+/* =====================
+   버튼
+   ===================== */
+.btn {
+  padding: 6px 16px;
+  border-radius: 9999px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.btn:hover {
+  opacity: 0.85;
+}
+
+.btn-gray {
+  background-color: #E4E6EB;
+  color: #050505;
+}
+
+.btn-blue {
+  background-color: #1877F2;
+  color: #ffffff;
+}
+
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/*스크롤바 숨기기*/
+.page-wrapper {
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE, Edge */
+}
+
+.page-wrapper::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}

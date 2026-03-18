@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.hati.report.mapper.ReportMapper">
+
+  <select id="countPendingDuplicate" resultType="int">
+    SELECT COUNT(*)
+    FROM SCOTT.reports
+    WHERE reporter_account_id = #{reporterAccountId, jdbcType=NUMERIC}
+      AND target_account_id   = #{targetAccountId, jdbcType=NUMERIC}
+      AND target_type         = #{targetType, jdbcType=VARCHAR}
+      AND status              = 0
+  </select>
+
+  <insert id="insert" parameterType="org.hati.report.vo.ReportVO">
+    INSERT INTO SCOTT.reports (
+      reporter_account_id,
+      target_account_id,
+      target_type,
+      target_id,
+      content,
+      status,
+      created_at
+    ) VALUES (
+      #{reporterAccountId, jdbcType=NUMERIC},
+      #{targetAccountId, jdbcType=NUMERIC},
+      #{targetType, jdbcType=VARCHAR},
+      #{targetId, jdbcType=NUMERIC},
+      #{content, jdbcType=VARCHAR},
+      0,
+      SYSDATE
+    )
+  </insert>
+
+</mapper>

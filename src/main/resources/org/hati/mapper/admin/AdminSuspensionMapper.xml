@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.hati.admin.mapper.AdminSuspensionMapper">
+
+	<!-- 정지 이력 INSERT (suspension_id는 trigger가 채움) -->
+	<insert id="insertSuspension"
+		parameterType="org.hati.admin.suspension.domain.AdminSuspensionCreateRequest">
+		INSERT INTO user_suspensions (
+		suspension_id,
+		account_id,
+		reply_content,
+		start_at,
+		end_at,
+		created_at,
+		target_type,
+		target_id
+		)
+		VALUES
+		(
+		NULL,
+		#{accountId},
+		#{comment},
+		SYSDATE,
+		SYSDATE + #{days},
+		SYSDATE,
+		#{targetType},
+		#{targetId}
+		)
+	</insert>
+
+	<!-- 신고 없이 정지 이력 INSERT -->
+	<insert id="insertDirectSuspension"
+		parameterType="org.hati.admin.suspension.domain.AdminDirectSuspendRequest">
+		INSERT INTO user_suspensions (
+		suspension_id,
+		account_id,
+		reply_content,
+		start_at,
+		end_at,
+		created_at,
+		target_type,
+		target_id
+		)
+		VALUES
+		(
+		NULL,
+		#{accountId},
+		#{comment},
+		SYSDATE,
+		SYSDATE + #{days},
+		SYSDATE,
+		#{targetType},
+		#{accountId}
+		)
+	</insert>
+
+	<update id="updateAccountStatus">
+		UPDATE accounts
+		SET status = #{status}
+		WHERE account_id
+		= #{accountId}
+	</update>
+
+	<!-- 같은 원인(target_type/target_id) 신고 일괄 해결 + 처리 코멘트/처리자/처리일 -->
+	<update id="resolveReportsByTarget">
+		UPDATE reports
+		SET status = 1,
+		reply_content =
+		#{replyContent},
+		handled_by = #{handledBy},
+		handled_at = SYSDATE
+		WHERE
+		target_type = #{targetType}
+		AND target_id = #{targetId}
+		AND status = 0
+	</update>
+
+	<!-- 원인 컨텐츠 숨김/삭제 처리 -->
+	<update id="hidePost">
+		UPDATE posts SET status = 'HIDDEN' WHERE post_id =
+		#{postId}
+	</update>
+
+	<update id="hideComment">
+		UPDATE comments SET status = 'HIDDEN' WHERE
+		comment_id = #{commentId}
+	</update>
+
+	<update id="hideTrainerReview">
+		UPDATE trainers_reviews SET status = 'HIDDEN' WHERE
+		review_id = #{reviewId}
+	</update>
+
+	<update id="deleteChatMessage">
+		UPDATE chat_messages SET is_deleted = 'Y' WHERE
+		message_id = #{messageId}
+	</update>
+
+	<update id="sanitizeProfileIntro">
+		UPDATE user_profile
+		SET intro = '부적절한 내용이 포함되어있습니다.'
+		WHERE account_id = #{accountId}
+	</update>
+
+	<update id="hideCenterReview">
+		UPDATE centers_reviews
+		SET status = 'HIDDEN'
+		WHERE review_id = #{reviewId}
+	</update>
+
+	<select id="selectSuspensions"
+		resultType="org.hati.admin.suspension.domain.AdminSuspensionListItemDTO">
+		SELECT
+		suspension_id AS suspensionId,
+		TO_CHAR(start_at,
+		'YYYY-MM-DD HH24:MI:SS') AS startAt,
+		TO_CHAR(end_at, 'YYYY-MM-DD
+		HH24:MI:SS') AS endAt,
+		TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI:SS') AS
+		createdAt,
+		target_type AS targetType,
+		target_id AS targetId,
+		reply_content AS replyContent
+		FROM user_suspensions
+		WHERE account_id =
+		#{accountId}
+		ORDER BY created_at DESC
+	</select>
+
+	<update id="hideChatMessage">
+		UPDATE chat_messages
+		SET is_deleted = 'Y'
+		WHERE
+		message_id = #{messageId}
+	</update>
+
+</mapper>

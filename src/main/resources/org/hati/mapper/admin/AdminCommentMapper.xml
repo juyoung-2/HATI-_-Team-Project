@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.hati.admin.mapper.AdminCommentMapper">
+
+	<!-- 정렬 SQL 조각 -->
+	<sql id="orderBy">
+		ORDER BY
+		<choose>
+			<when test="sort == 'createdAtAsc'"> x.createdAtRaw ASC </when>
+			<otherwise> x.createdAtRaw DESC </otherwise>
+		</choose>
+	</sql>
+
+	<!-- 공통 WHERE -->
+	<sql id="whereClause">
+		<where>
+			<if test="nickname != null and nickname != ''">
+				AND d.nickname LIKE '%' || #{nickname} || '%'
+			</if>
+			<if test="handle != null and handle != ''">
+				AND d.handle LIKE '%' || #{handle} || '%'
+			</if>
+			<if test="content != null and content != ''">
+				AND c.content LIKE '%' || #{content} || '%'
+			</if>
+			<if test="roleType != null and roleType != ''">
+				AND d.role_type = #{roleType}
+			</if>
+			<if test="status != null and status != ''">
+				AND c.status = #{status}
+			</if>
+
+			<!-- createdFrom/To: YYYY-MM-DD -->
+			<if test="createdFrom != null and createdFrom != ''">
+				AND c.created_at &gt;= TO_DATE(#{createdFrom},
+				'YYYY-MM-DD')
+			</if>
+			<if test="createdTo != null and createdTo != ''">
+				AND c.created_at &lt; TO_DATE(#{createdTo}, 'YYYY-MM-DD')
+				+ 1
+			</if>
+
+			<!-- 신고받은 댓글 탭 -->
+			<if test="onlyReported != null and onlyReported">
+				AND EXISTS (
+				SELECT 1
+				FROM reports r
+				WHERE r.target_type =
+				'COMMENT'
+				AND r.target_id = c.comment_id
+				)
+			</if>
+		</where>
+	</sql>
+
+	<!-- count -->
+	<select id="countComments"
+		parameterType="org.hati.admin.comment.domain.AdminCommentSearchRequest"
+		resultType="int">
+		SELECT COUNT(*)
+		FROM comments c
+		JOIN vw_account_display d
+		ON c.account_id
+		= d.account_id
+		<include refid="whereClause" />
+	</select>
+
+	<!-- list (11g paging: row_number) -->
+	<select id="selectComments"
+		parameterType="org.hati.admin.comment.domain.AdminCommentSearchRequest"
+		resultType="org.hati.admin.comment.domain.AdminCommentListItemDTO">
+		SELECT *
+		FROM (
+		SELECT
+		x.*,
+		ROW_NUMBER() OVER(
+		<include refid="orderBy" />
+		) AS rn
+		FROM (
+		SELECT
+		c.comment_id AS commentId,
+		c.account_id AS
+		authorAccountId,
+		d.profile_image_url AS profileImageUrl,
+		d.nickname AS
+		nickname,
+		d.handle AS handle,
+		d.role_type AS roleType,
+		c.status AS
+		status,
+		c.created_at AS createdAtRaw,  <!-- ✅ 정렬용 RAW -->
+		TO_CHAR(c.created_at, 'YYYY-MM-DD HH24:MI:SS') AS createdAt,
+		c.content
+		AS content
+		FROM comments c
+		JOIN vw_account_display d
+		ON c.account_id =
+		d.account_id
+		<include refid="whereClause" />
+		) x
+		)
+		WHERE rn BETWEEN #{startRow} AND #{endRow}
+		ORDER BY rn
+	</select>
+
+	<!-- hide: status=HIDDEN, deleted=1 (updated_at은 트리거 있으면 자동) -->
+	<update id="updateHideComment">
+		UPDATE comments
+		SET status = 'HIDDEN',
+		deleted = 1
+		WHERE comment_id = #{commentId}
+	</update>
+
+</mapper>

@@ -1,0 +1,102 @@
+/* util.css - auth 화면에서 쓰는 Tailwind 유틸 최소 구현 */
+
+/* layout */
+.min-h-screen { min-height: 100vh; }
+.w-full { width: 100%; }
+
+.flex { display: flex; }
+.flex-1 { flex: 1 1 0%; }
+.items-center { align-items: center; }
+.justify-center { justify-content: center; }
+.justify-between { justify-content: space-between; }
+
+.hidden { display: none; }
+@media (min-width: 1024px) { .lg\:block { display: block; } }
+
+/* widths */
+.max-w-6xl { max-width: 72rem; }  /* 1152px */
+.max-w-5xl { max-width: 64rem; }  /* 1024px ✅ 추가 */
+.max-w-4_5xl { max-width: 60rem; } /* 960px */
+.max-w-4xl { max-width: 56rem; }  /* 896px  ✅ 추가 */
+.max-w-md  { max-width: 28rem; }  /* 448px */
+
+/* responsive max-width (lg) */
+@media (min-width: 1024px) {
+  .lg\:max-w-4xl { max-width: 56rem; } /* 896px ✅ 추가 */
+  .lg\:max-w-4_5xl { max-width: 60rem; } /* 960px */
+}
+
+/* spacing */
+.p-6 { padding: 1.5rem; }
+.px-4 { padding-left: 1rem; padding-right: 1rem; }
+.px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+.px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+.px-4 { padding-left: 1rem; padding-right: 1rem; }
+.py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+
+.pl-7 { padding-left: 1.75rem; }
+.pr-3 { padding-right: 0.75rem; }
+
+.mb-4 { margin-bottom: 1rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-1 { margin-bottom: 0.25rem; }
+.mt-6 { margin-top: 1.5rem; }
+.my-4 { margin-top: 1rem; margin-bottom: 1rem; }
+
+.gap-16 { gap: 4rem; }
+.gap-10 { gap: 2.5rem; } /* ✅ 추가 (너가 사용 중인 gap-10 대응) */
+.gap-3 { gap: 0.75rem; }
+.gap-2 { gap: 0.5rem; }
+
+.space-y-4 > * + * { margin-top: 1rem; }
+.space-y-3 > * + * { margin-top: 0.75rem; }
+.space-x-2 > * + * { margin-left: 0.5rem; }
+
+/* grid */
+.grid { display: grid; }
+.grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+/* typography */
+.text-center { text-align: center; }
+.text-xl { font-size: 1.25rem; }
+.text-base { font-size: 1rem; }
+.text-sm { font-size: 0.875rem; }
+.text-xs { font-size: 0.75rem; }
+.block { display: block; }
+
+/* colors/borders */
+.border { border: 1px solid transparent; }
+.border-t { border-top: 1px solid transparent; }
+
+.border-gray-300 { border-color: #D1D5DB; }
+.border-red-500 { border-color: #EF4444; }
+
+.bg-white { background: #fff; }
+
+.rounded-lg { border-radius: 0.5rem; }
+.rounded-md { border-radius: 0.375rem; }
+
+.shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,.10), 0 4px 6px -4px rgba(0,0,0,.10);
+}
+
+/* sizing */
+.h-12 { height: 3rem; }
+.h-10 { height: 2.5rem; }
+
+/* positioning */
+.relative { position: relative; }
+.absolute { position: absolute; }
+.left-3 { left: 0.75rem; }
+.top-1\/2 { top: 50%; }
+.-translate-y-1\/2 { transform: translateY(-50%); }
+
+/* basic form normalize */
+input, select, button { font: inherit; }
+button { cursor: pointer; background: none; border: none; }
+input, select {
+  outline: none;
+  box-sizing: border-box;
+  background: #fff;
+}

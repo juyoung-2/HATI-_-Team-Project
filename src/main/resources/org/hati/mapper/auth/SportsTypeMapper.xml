@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.hati.auth.mapper.SportsTypeMapper">
+
+    <select id="selectBaseFeeById" parameterType="int" resultType="int">
+        SELECT base_fee
+          FROM sports_type
+         WHERE sport_id = #{sportId}
+    </select>
+
+</mapper>

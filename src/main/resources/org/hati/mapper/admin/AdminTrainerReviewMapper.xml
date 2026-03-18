@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper
+	namespace="org.hati.admin.mapper.AdminTrainerReviewMapper">
+
+	<sql id="reviewWhere">
+		<where>
+			<if test="nickname != null and nickname != ''">
+				AND d.nickname LIKE '%' || #{nickname} || '%'
+			</if>
+
+			<if test="handle != null and handle != ''">
+				AND d.handle LIKE '%' || #{handle} || '%'
+			</if>
+
+			<if test="content != null and content != ''">
+				AND DBMS_LOB.INSTR(r.content, #{content}) &gt; 0
+			</if>
+
+			<if test="roleType != null and roleType != ''">
+				AND d.role_type = #{roleType}
+			</if>
+
+			<if test="status != null and status != ''">
+				AND r.status = #{status}
+			</if>
+
+			<if test="createdFrom != null and createdFrom != ''">
+				AND r.created_at &gt;= TO_DATE(#{createdFrom}, 'YYYY-MM-DD')
+			</if>
+
+			<if test="createdTo != null and createdTo != ''">
+				AND r.created_at &lt; TO_DATE(#{createdTo}, 'YYYY-MM-DD') + 1
+			</if>
+
+			<if test="onlyReported != null and onlyReported">
+				AND EXISTS (
+				SELECT 1
+				FROM reports rp
+				WHERE rp.target_type = 'TRAINER_REVIEW'
+				AND rp.target_id = r.review_id
+				)
+			</if>
+		</where>
+	</sql>
+
+	<select id="count"
+		parameterType="org.hati.admin.review.domain.AdminTrainerReviewSearchRequest"
+		resultType="int">
+		SELECT COUNT(*)
+		FROM trainers_reviews r
+		JOIN vw_account_display d
+		ON r.user_account_id = d.account_id
+		<include refid="reviewWhere" />
+	</select>
+
+	<select id="findPage"
+		parameterType="org.hati.admin.review.domain.AdminTrainerReviewSearchRequest"
+		resultType="org.hati.admin.review.domain.AdminTrainerReviewListItemDTO">
+
+		<!-- page/size 기본값 방어는 Service에서 세팅 -->
+		SELECT *
+		FROM (
+		SELECT
+		r.review_id AS reviewId,
+		r.user_account_id AS authorAccountId,
+		d.nickname,
+		d.handle,
+		d.role_type AS roleType,
+		d.profile_image_url AS profileImageUrl,
+		r.status,
+		TO_CHAR(r.created_at, 'YYYY-MM-DD HH24:MI:SS') AS createdAt,
+		r.content AS content,
+		ROW_NUMBER() OVER(
+		ORDER BY
+		<choose>
+			<when test="sort == 'createdAtAsc'">r.created_at ASC</when>
+			<otherwise>r.created_at DESC</otherwise>
+		</choose>
+		) AS rn
+		FROM trainers_reviews r
+		JOIN vw_account_display d
+		ON r.user_account_id = d.account_id
+		<include refid="reviewWhere" />
+		)
+		WHERE rn &gt; ( (#{page} - 1) * #{size} )
+		AND rn &lt;= ( #{page} * #{size} )
+
+	</select>
+
+	<update id="hide" parameterType="long">
+		UPDATE trainers_reviews
+		SET status = 'HIDDEN'
+		WHERE review_id = #{reviewId}
+	</update>
+
+</mapper>

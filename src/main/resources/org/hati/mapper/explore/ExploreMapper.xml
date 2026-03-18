@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.hati.explore.mapper.ExploreMapper">
+
+  <!-- =====================================================
+       1) HATI 코드 전체 목록
+       ===================================================== -->
+  <select id="selectAllHatiCodes" resultType="string">
+    SELECT hati_code
+      FROM SCOTT.hati_master
+     ORDER BY hati_code
+  </select>
+
+  <!-- =====================================================
+       2) People 검색
+       - nickname / handle / intro LIKE 검색
+       - HATI 필터 (선택)
+       ===================================================== -->
+  <select id="selectPeoplePaged" resultType="org.hati.explore.vo.UserCardDTO">
+    SELECT * FROM (
+      SELECT inner_q.*, ROW_NUMBER() OVER (ORDER BY inner_q.nickname ASC) AS rn
+      FROM (
+        SELECT
+          a.account_id    AS accountId,
+          up.nickname     AS nickname,
+          up.handle       AS handle,
+          up.intro        AS intro,
+          up.hati_code    AS hatiCode,
+          up.gender       AS gender,
+          mf.url          AS profileImageUrl
+        FROM SCOTT.accounts a
+        JOIN SCOTT.user_profile up ON up.account_id = a.account_id
+        LEFT JOIN SCOTT.media_files mf
+          ON mf.ref_type = 'PROFILE'
+         AND mf.ref_id   = a.account_id
+        WHERE a.status = 'ACTIVE'
+          AND a.role_type IN ('USER', 'TRAINER')
+
+        <if test="q != null and q != ''">
+          AND (
+            up.nickname LIKE '%' || #{q} || '%'
+            OR up.handle  LIKE '%' || #{q} || '%'
+            OR up.intro   LIKE '%' || #{q} || '%'
+          )
+        </if>
+
+        <if test="hatiList != null and hatiList.size() > 0">
+          AND up.hati_code IN
+          <foreach item="h" collection="hatiList" open="(" separator="," close=")">
+            #{h}
+          </foreach>
+        </if>
+
+      ) inner_q
+    )
+    WHERE rn BETWEEN (#{offset} + 1) AND (#{offset} + #{limit})
+  </select>
+
+<!-- =====================================================
+	     3) OpenTalk 검색
+	     - is_private=0, room_type=GROUP 공개 그룹방
+	     - room_title / description LIKE 검색
+	     ===================================================== -->
+	<select id="selectOpenTalkPaged" resultType="org.hati.explore.vo.GroupChatDTO">
+	  SELECT * FROM (
+	    SELECT inner_q.*, ROW_NUMBER() OVER (ORDER BY inner_q.roomId DESC) AS rn
+	    FROM (
+	      SELECT
+	        cr.room_id        AS roomId,
+	        cr.room_title     AS roomTitle,
+	        cr.description    AS description,
+	        cr.room_image     AS roomImage,
+	        cr.max_members    AS maxMembers,
+	        cr.bj_account_id  AS bjAccountId,
+	        up.nickname       AS bjNickname,
+	        up.handle 		  AS bjHandle,
+	        mf.url            AS bjProfileImageUrl,
+	        up.hati_code      AS bjHatiCode,
+	        (SELECT COUNT(*) FROM SCOTT.chat_room_members m WHERE m.room_id = cr.room_id) AS currentMembers,
+	        CASE
+	          WHEN #{accountId, jdbcType=NUMERIC} IS NULL THEN 0
+	          WHEN EXISTS (
+	            SELECT 1 FROM SCOTT.chat_room_members m
+	             WHERE m.room_id = cr.room_id
+	               AND m.account_id = #{accountId, jdbcType=NUMERIC}
+	          ) THEN 1
+	          ELSE 0
+	        END AS joined
+	      FROM SCOTT.chat_rooms cr
+	      JOIN SCOTT.user_profile up ON up.account_id = cr.bj_account_id
+	      LEFT JOIN SCOTT.media_files mf
+	        ON mf.ref_type = 'PROFILE'
+	       AND mf.ref_id   = cr.bj_account_id
+	      WHERE cr.room_type  = 'GROUP'
+	        AND cr.is_private = 0
+	        <if test="q != null and q != ''">
+	          AND (
+	            cr.room_title  LIKE '%' || #{q} || '%'
+	            OR cr.description LIKE '%' || #{q} || '%'
+	          )
+	        </if>
+	    ) inner_q
+	  )
+	  WHERE rn BETWEEN (#{offset} + 1) AND (#{offset} + #{limit})
+	</select>
+
+</mapper>

@@ -1,0 +1,981 @@
+/* post-card.css (post-card.jsp 1:1 매칭) */
+
+/* =========================================================
+   0) Card Wrapper (카드 전체)
+   ========================================================= */
+.post-card{
+  background: var(--card, #fff);
+  border-radius: var(--radius, 8px);
+  box-shadow: 0 1px 2px rgba(0,0,0,.10);
+  padding: 14px 16px;
+}
+
+/* =========================================================
+   1) Header (작성자/더보기)
+   ========================================================= */
+.post-header{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:10px;
+}
+
+.post-writer{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  min-width:0;
+}
+
+/* (참고) 글작성 화면에서 쓰던 에러/프리뷰 클래스가 섞여있음
+   - post-card 전용 파일이면 나중에 분리 추천 */
+.post-write__error{
+  padding: 10px 12px;
+  border: 1px solid #f3b4b4;
+  background: #fff5f5;
+  color: #b42318;
+  border-radius: 10px;
+  font-size: 14px;
+}
+.post-write__preview{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:10px;
+}
+
+/* -------------------------
+   1-1) Writer Avatar
+   ------------------------- */
+
+/* 아바타 클릭 시 프로필 이동 링크 */
+.writer-avatar-link{
+  display: block;
+  flex: 0 0 40px;
+  border-radius: 999px;
+  overflow: hidden;
+  text-decoration: none;
+  line-height: 0;
+}
+
+.writer-avatar{
+  width:40px;
+  height:40px;
+  border-radius:999px;
+  object-fit:cover;
+  display:block;
+  background: var(--border, #E4E6EB);
+}
+
+/* 이미지 없을 때 fallback */
+.writer-avatar--fallback{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:700;
+  color: var(--sub, #606770);
+  background: var(--border, #E4E6EB);
+}
+
+/* -------------------------
+   1-2) Writer Meta (이름/핸들/시간/HATI)
+   ------------------------- */
+.writer-meta{ min-width:0; }
+
+.writer-top{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  min-width:0;
+  flex-wrap:wrap;
+}
+
+.writer-name{
+  font-weight:700;
+  font-size:14px;
+  color: var(--text, #050505);
+  line-height:1.2;
+}
+
+.writer-handle{
+  font-size:12px;
+  color: var(--sub, #606770);
+  line-height:1.2;
+}
+
+.writer-dot{
+  color: var(--sub, #606770);
+  opacity:.8;
+}
+
+.post-time{
+  font-size:12px;
+  color: var(--sub, #606770);
+}
+
+/* ✅ HATI 배지: 팬네임 위 한 줄 */
+.writer-badge-row{
+  width:100%;
+  line-height:1;
+  margin-bottom:2px; /* 취향: 0~4px */
+}
+
+/* ✅ 기존 한 줄(이름/핸들/시간) */
+.writer-main-row{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  min-width:0;
+  flex-wrap:wrap;
+}
+
+/* -------------------------
+   1-3) More Button / Menu
+   ------------------------- */
+.post-more-wrap{
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.post-more{
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  color: var(--sub, #606770);
+  font-size: 20px;
+  line-height: 1;
+  padding: 6px 8px;
+  border-radius: 8px;
+  transition: background .15s ease, color .15s ease;
+}
+
+.post-more:hover{
+  background:#F3F4F6;
+}
+
+.post-more.is-open{
+  background:#EEF2FF;
+  color: var(--primary, #1877F2);
+}
+
+/* ✅ 버튼 오른쪽에 세로로 뜨는 팝오버 */
+.post-more-menu{
+  position: absolute;
+  top: calc(100% + 6px);  /* ✅ 버튼 아래 */
+  right: -36px;               /* ✅ 버튼 오른쪽 끝 기준 정렬 */
+  min-width: 96px;
+  padding: 6px;
+  border: 1px solid var(--border, #E4E6EB);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(0,0,0,.12);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+}
+
+.post-more-menu[hidden]{
+  display: none !important;
+}
+
+.post-more-item{
+  width: 100%;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  text-align: center;
+  display: block;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  color: var(--text, #050505);
+}
+
+.post-more-item:hover{
+  background:#F3F4F6;
+}
+
+.post-more-item--danger{
+  color:#b42318;
+}
+
+.post-more-item--danger:hover{
+  background:#FEF2F2;
+}
+
+/* 핀 버튼 + 더보기 버튼 나란히 */
+.post-more-actions{
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 핀 버튼 */
+.post-pin-btn{
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  color: var(--sub, #606770);
+  padding: 6px 8px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.post-pin-btn:hover{ background: #F3F4F6; }
+
+/* 기본: OFF(외곽선) 보이고, ON(채워진) 숨김 */
+.post-pin-btn .pin-off{ display: block; }
+.post-pin-btn .pin-on { display: none;  }
+
+/* is-active: ON 보이고, OFF 숨김 */
+.post-pin-btn.is-active{ color: var(--primary, #1877F2); }
+.post-pin-btn.is-active .pin-off{ display: none;  }
+.post-pin-btn.is-active .pin-on { display: block; }
+
+/* =========================================================
+   2) Body (텍스트/미디어/태그)
+   ========================================================= */
+.post-body{ margin-top:4px; }
+
+.post-text{
+  display:block;
+  width:100%;
+  margin:0;
+  font-size:14px;
+  color: var(--text, #050505);
+  line-height:1.6;
+  white-space:pre-line;
+  word-break:break-word;
+  overflow-wrap:anywhere;
+}
+
+.post-detail-link--text{
+  display:block;
+  width:100%;
+  color:inherit !important;
+  text-decoration:none !important;
+  white-space:inherit;
+}
+/* =========================
+   2-1) Detail Link (본문/이미지 클릭)
+   - 홈/탐색/북마크 공용
+   ========================= */
+a.post-detail-link,
+a.post-detail-link:link,
+a.post-detail-link:visited,
+a.post-detail-link:hover,
+a.post-detail-link:focus,
+a.post-detail-link:active,
+a.post-detail-link--media,
+a.post-detail-link--media:link,
+a.post-detail-link--media:visited,
+a.post-detail-link--media:hover,
+a.post-detail-link--media:focus,
+a.post-detail-link--media:active{
+  display:block;
+  color:inherit !important;
+  text-decoration:none !important;
+  border-bottom:0 !important;
+  box-shadow:none !important;
+  outline:0;
+}
+
+a.post-detail-link *,
+a.post-detail-link--media *{
+  color:inherit !important;
+  text-decoration:none !important;
+  border-bottom:0 !important;
+  box-shadow:none !important;
+}
+
+/* 본문 텍스트 자체 방어 */
+.post-body .post-text,
+.post-body .post-text *{
+  text-decoration:none !important;
+  border-bottom:0 !important;
+}
+
+/* =========================================================
+   3) Media Wrapper (이미지 공통 래퍼)
+   ========================================================= */
+.post-media{
+  margin-top:10px;
+  border-radius:12px;
+  overflow:hidden;
+  border:1px solid var(--border, #E4E6EB);
+  background:#fff;
+}
+
+/* (구버전 단일 이미지 호환용) */
+.post-img{
+  width:100%;
+  height:auto;
+  display:block;
+}
+
+/* =========================================================
+   4) Media Grid (1~6장)
+   ========================================================= */
+.post-media-grid{
+  display:grid;
+  gap:2px;
+  background: var(--border, #E4E6EB);
+}
+
+.post-media__item{
+  position:relative;
+  overflow:hidden;
+  background:#fff;
+}
+
+.post-media__img{
+  width:100%;
+  height:100%;
+  display:block;
+  object-fit:cover;
+}
+
+/* 1장 */
+.post-media-grid.count-1{
+  grid-template-columns: 1fr;
+}
+.post-media-grid.count-1 .post-media__item{
+  aspect-ratio: 16 / 10;
+}
+
+/* 2장 (1*1 = 1행 2열) */
+.post-media-grid.count-2{
+  grid-template-columns: 1fr 1fr;
+}
+.post-media-grid.count-2 .post-media__item{
+  aspect-ratio: 1 / 1;
+}
+
+/* 3장 (1*2) : 좌 큰 1 + 우 2 */
+.post-media-grid.count-3{
+  grid-template-columns: 2fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+.post-media-grid.count-3 .post-media__item{
+  aspect-ratio: auto;
+  min-height: 120px;
+}
+.post-media-grid.count-3 .post-media__item:nth-child(1){
+  grid-row: 1 / span 2;
+}
+
+/* 4장 (2*2) */
+.post-media-grid.count-4{
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+.post-media-grid.count-4 .post-media__item{
+  aspect-ratio: 1 / 1;
+}
+
+/* 5장 (1*2*2) : 좌 큰 1 + 우 상하 2 + 하단 2 */
+.post-media-grid.count-5{
+  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+.post-media-grid.count-5 .post-media__item{
+  aspect-ratio: 1 / 1;
+}
+.post-media-grid.count-5 .post-media__item:nth-child(1){
+  grid-column: 1;
+  grid-row: 1 / span 2; /* 좌측 큰 이미지 */
+  aspect-ratio: auto;
+}
+
+/* 6장 (2x3) */
+.post-media-grid.count-6{
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+.post-media-grid.count-6 .post-media__item{
+  aspect-ratio: 1 / 1;
+}
+/* =========================================================
+   5) Tags
+   ========================================================= */
+.post-tags{
+  margin-top:10px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+
+.tag-chip{
+  display:inline-flex;
+  align-items:center;
+  padding:6px 10px;
+  border-radius:999px;
+  text-decoration:none;
+  font-size:12px;
+  font-weight:600;
+  background:#E7F3FF;
+  color: var(--primary, #1877F2);
+}
+.tag-chip:hover{ filter: brightness(0.98); }
+
+/* =========================================================
+   6) Footer Actions (댓글/좋아요/북마크/링크)
+   ========================================================= */
+.post-footer{
+  margin-top:12px;
+  padding-top:10px;
+  border-top:1px solid var(--border, #E4E6EB);
+}
+
+.post-actions{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:6px;
+}
+
+/* 6-1) Action Button Common */
+.action-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  border:0;
+  background:transparent;
+  cursor:pointer;
+  padding:8px 10px;
+  border-radius:10px;
+  color: var(--sub, #606770);
+  font-size:14px;
+  line-height:1;
+  user-select:none;
+}
+.action-btn:hover{ background:#F3F4F6; }
+
+.action-ico{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:16px;
+  line-height:1;
+}
+
+.action-count{
+  font-size:12px;
+  color: var(--sub, #606770);
+}
+
+/* 6-2) Bookmark SVG Toggle */
+.bookmark-ico{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:20px;
+  height:20px;
+  line-height:0;
+}
+
+.bm{ display:block; }
+.bm-on{ display:none; }
+
+.bookmark-btn.is-active{
+  color: var(--primary, #1877F2);
+}
+.bookmark-btn.is-active .bm-off{ display:none; }
+.bookmark-btn.is-active .bm-on{ display:block; }
+
+.bookmark-btn:hover{
+  color: var(--primary, #1877F2);
+}
+
+/* 6-3) Like Active */
+.like-btn.is-active{
+  color: var(--primary, #1877F2);
+}
+
+/* =========================================================
+   7) Comments (MVP) - UI 업그레이드 + 토글(기본 숨김)
+   - 좌: 아바타 + 팬네임
+   - 우: 시간 + ... 메뉴
+   - ✅ 기본 접힘(is-collapsed) 지원
+   ========================================================= */
+.post-comments{ margin-top: 10px; }
+
+/* ✅ 기본 접힘: 입력/목록 숨김 (💬 클릭 시 펼침) */
+.post-comments.is-collapsed .post-comments__input,
+.post-comments.is-collapsed .post-comments__list{
+  display:none;
+}
+
+/* (선택) 접힘 상태에서 여백만 살짝 */
+.post-comments.is-collapsed{
+  margin-top: 8px;
+}
+
+.post-comments__input{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  margin-bottom: 8px;
+}
+
+.comment-input{
+  flex:1;
+  padding: 10px 12px;
+  border: 1px solid var(--border, #E4E6EB);
+  border-radius: 10px;
+  background:#fff;
+  box-sizing: border-box;
+}
+
+.comment-submit{
+  padding: 10px 12px;
+  border: 1px solid var(--border, #E4E6EB);
+  border-radius: 10px;
+  background:#fff;
+  cursor:pointer;
+  white-space: nowrap;
+  text-align: center;
+}
+
+/* =========================================================
+   7-1) Comment Item
+   ========================================================= */
+.comment-item{
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border, #E4E6EB);
+}
+
+/* 상단: 좌/우 */
+.comment-item__top{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:10px;
+}
+
+/* 좌측: 아바타 + 팬네임 */
+.comment-left{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  min-width:0;
+}
+
+/* 우측: 시간 + ... */
+.comment-right{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex:0 0 auto;
+}
+
+/* =========================================================
+   7-2) Avatar
+   ========================================================= */
+.comment-avatar{
+  width:34px;
+  height:34px;
+  border-radius:999px;
+  object-fit:cover;
+  flex:0 0 34px;
+  display:block;
+  background: var(--border, #E4E6EB);
+}
+.comment-avatar--fallback{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:700;
+  font-size:13px;
+  color: var(--sub, #606770);
+  background: var(--border, #E4E6EB);
+}
+
+/* =========================================================
+   7-3) Fanname (닉네임 + @핸들 + HATI 배지)
+   ========================================================= */
+.comment-writer{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  flex-wrap:wrap;
+  min-width:0;
+}
+
+.comment-writer__name{
+  font-weight:700;
+  font-size:13px;
+  color: var(--text, #050505);
+  line-height:1.2;
+}
+
+.comment-writer__handle{
+  font-size:12px;
+  color: var(--sub, #606770);
+  line-height:1.2;
+}
+
+/* (선택) HATI 배지가 너무 튀면 크기만 살짝 줄이기 */
+.comment-writer .hati-badge{
+  transform: translateY(-0.5px);
+}
+
+/* =========================================================
+   7-4) Meta (시간)
+   ========================================================= */
+.comment-time{
+  color: var(--sub, #606770);
+  font-size:12px;
+  white-space: nowrap;
+}
+
+/* =========================================================
+   7-5) Content / Actions (아바타 정렬 맞춤)
+   ========================================================= */
+.comment-content{
+  margin-top: 6px;
+  margin-left: 44px; /* 아바타(34) + gap(10) */
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.comment-actions{
+  margin-top: 8px;
+  margin-left: 44px;
+}
+
+/* 작성자 댓글 좋아요 */
+.comment-like,
+.comment-pin {
+  border: 1px solid var(--border, #E4E6EB);
+  background: #fff;
+  border-radius: 999px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.comment-like svg,
+.comment-pin svg {
+  display: block;
+}
+
+.comment-like.is-active svg {
+  stroke: var(--primary);
+  fill: var(--primary);
+}
+
+.comment-pin.is-active svg {
+  stroke: var(--primary);
+  fill: var(--primary);
+}
+
+/* 라벨 */
+.comment-writer-liked,
+.comment-writer-pinned {
+  margin-top: 6px;
+  margin-left: 44px;
+  font-size: 12px;
+  color: var(--sub, #606770);
+}
+
+/* =========================================================
+   7-6) ... 버튼 + 메뉴
+   ========================================================= */
+.comment-more-wrap{
+  position: relative;
+}
+
+.comment-more{
+  border:0;
+  background:transparent;
+  cursor:pointer;
+  color: var(--sub, #606770);
+  font-size:18px;
+  line-height:1;
+  padding:6px 8px;
+  border-radius:8px;
+}
+.comment-more:hover{ background:#F3F4F6; }
+
+.comment-more-link {
+  display: block;
+  text-align: center;
+  padding: 10px;
+  font-size: 13px;
+  color: var(--primary);
+  text-decoration: none;
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+}
+.comment-more-link:hover { opacity: .8; }
+
+/* 메뉴 */
+.comment-menu{
+  position:absolute;
+  top: 30px;
+  right: 0;
+  min-width: 76px;
+  background:#fff;
+  border:1px solid var(--border, #E4E6EB);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.10);
+  padding: 4px;
+  display:none;
+  z-index: 50;
+}
+.comment-menu.is-open{ display:block; }
+
+.comment-menu__item{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  height:32px;
+  text-align:center;
+  border:0;
+  background:transparent;
+  cursor:pointer;
+  padding: 0 8px;
+  border-radius: 10px;
+  font-size: 14px;
+  color: var(--text, #050505);
+  box-sizing:border-box;
+}
+.comment-menu__item:hover{ background:#F3F4F6; }
+
+.comment-menu__item.is-danger{
+  color: #b42318;
+}
+
+.comment-btn svg,
+.comment-btn path {
+  pointer-events: none;
+}
+
+/* =========================================================
+   7-7) Edit Mode
+   ========================================================= */
+.comment-edit{
+  margin-top: 8px;
+  margin-left: 44px;
+}
+
+.comment-edit__textarea{
+  width:100%;
+  min-height: 64px;
+  padding: 10px 12px;
+  border: 1px solid var(--border, #E4E6EB);
+  border-radius: 10px;
+  box-sizing:border-box;
+  resize: none;
+}
+
+.comment-edit__actions{
+  display:flex;
+  gap:8px;
+  margin-top: 8px;
+}
+
+.comment-edit__btn{
+  border: 1px solid var(--border, #E4E6EB);
+  background:#fff;
+  border-radius: 10px;
+  padding: 8px 10px;
+  cursor:pointer;
+  font-size: 13px;
+}
+.comment-edit__btn:hover{ background:#F3F4F6; }
+
+/* =========================================================
+   PEOPLE CARD (explore People 모드)
+   ========================================================= */
+.people-card{
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.people-card:hover{ background: #F9F9F9; }
+
+/* 아바타 */
+.people-card__avatar{
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.people-card__avatar-img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.people-card__avatar-fallback{
+  width: 100%;
+  height: 100%;
+  background: var(--primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+/* 정보 */
+.people-card__info{
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.people-card__info .hati-badge{
+  align-self: flex-start;
+}
+
+.people-card__name-row{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.people-card__name{
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.people-card__handle{
+  font-size: 13px;
+  color: var(--sub);
+}
+
+.people-card__intro{
+  font-size: 13px;
+  color: var(--sub);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* =========================================================
+   OPENTALK CARD
+   ========================================================= */
+.opentalk-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  transition: background 0.15s;
+}
+
+.opentalk-card:hover { background: #F9F9F9; }
+
+.opentalk-card__avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--border, #E4E6EB);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--sub);
+}
+
+.opentalk-card__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.opentalk-card__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.opentalk-card__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.opentalk-card__desc {
+  font-size: 13px;
+  color: var(--sub);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.opentalk-card__bj-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.opentalk-card__bj-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.opentalk-card__bj-handle {
+  font-size: 12px;
+  color: var(--sub);
+}
+
+.opentalk-card__members {
+  font-size: 12px;
+  color: var(--sub);
+  margin: 0;
+}
+
+.opentalk-card__action {
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+.btn-join {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: none;
+  background: var(--primary, #1877F2);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.btn-join:hover { background: #1565d8; }

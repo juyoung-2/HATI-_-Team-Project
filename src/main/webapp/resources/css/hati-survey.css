@@ -1,0 +1,205 @@
+/* ===== HATI Survey Modal ===== */
+#hatiModalOverlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+}
+#hatiModalOverlay.active {
+  display: flex;
+}
+
+#hatiModal {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  width: 100%;
+  max-width: 620px;
+  padding: 40px 48px;
+  box-sizing: border-box;
+  position: relative;
+}
+
+/* 타이틀 */
+#hatiModal .survey-title {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: #1877F2;
+  margin-bottom: 6px;
+}
+#hatiModal .survey-subtitle {
+  text-align: center;
+  font-size: 14px;
+  color: #606770;
+  margin-bottom: 24px;
+}
+
+/* 프로그레스 바 */
+.survey-progress-wrap {
+  background: #E4E6EB;
+  border-radius: 999px;
+  height: 6px;
+  margin-bottom: 8px;
+}
+.survey-progress-bar {
+  background: #1877F2;
+  height: 6px;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+.survey-progress-text {
+  text-align: center;
+  font-size: 13px;
+  color: #606770;
+  margin-bottom: 24px;
+}
+
+/* 질문 */
+.survey-question {
+  font-size: 17px;
+  font-weight: 700;
+  color: #1C1E21;
+  margin-bottom: 16px;
+}
+
+/* 선택지 */
+.survey-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+.survey-option {
+  width: 100%;
+  padding: 14px 20px;
+  border: 1px solid #D1D5DB;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 15px;
+  color: #1C1E21;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  box-sizing: border-box;
+}
+.survey-option:hover {
+  border-color: #1877F2;
+  background: #F0F6FF;
+}
+.survey-option.selected {
+  border-color: #1877F2;
+  background: #E7F0FF;
+  font-weight: 600;
+  color: #1877F2;
+}
+
+/* 다음 버튼 */
+.survey-next-btn {
+  float: right;
+  height: 44px;
+  padding: 0 28px;
+  background: #1877F2;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.survey-next-btn:disabled {
+  background: #C4C4C4;
+  cursor: not-allowed;
+}
+.survey-next-btn:not(:disabled):hover {
+  background: #1565C0;
+}
+.survey-nav-btns {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.survey-prev-btn {
+  height: 44px;
+  padding: 0 28px;
+  background: #fff;
+  color: #1877F2;
+  border: 1px solid #1877F2;
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.survey-prev-btn:hover {
+  background: #F0F6FF;
+}
+.survey-prev-btn:disabled {
+  border-color: #C4C4C4;
+  color: #C4C4C4;
+  cursor: not-allowed;
+}
+
+/* ===== 결과 카드 ===== */
+.survey-result-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 28px;
+}
+.survey-result-img {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #1877F2;
+}
+.survey-result-alias {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1C1E21;
+}
+.survey-result-desc {
+  font-size: 14px;
+  color: #606770;
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* ===== 결과 버튼 2개 나란히 ===== */
+.survey-result-btns {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+.survey-retry-btn {
+  flex: 1;
+  height: 44px;
+  border: 1px solid #1877F2;
+  border-radius: 8px;
+  background: #fff;
+  color: #1877F2;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.survey-retry-btn:hover {
+  background: #F0F6FF;
+}
+.survey-confirm-btn {
+  flex: 1;
+  height: 44px;
+  border: none;
+  border-radius: 8px;
+  background: #1877F2;
+  color: #fff;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.survey-confirm-btn:hover {
+  background: #1565C0;
+}

@@ -1,0 +1,293 @@
+/* trainerRow.css*/
+/* ====== info row ====== */
+.trainer-row{
+  display:flex;
+  align-items:stretch;
+  gap:10px;
+  position: relative; /* ✅ 추가 */
+
+  background: #fff;
+  border: 1px solid #E4E6EB;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.06);
+  padding: 16px 18px;
+  box-sizing: border-box;
+  transition: box-shadow .15s ease;
+}
+
+.trainer-row:hover{
+  box-shadow: 0 6px 18px rgba(0,0,0,.08);
+}
+
+.trainer-row__left{
+  width: 92px;                 /* 왼쪽 컬럼 고정 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.trainer-row__avatarWrap{
+  position: relative;
+  width: 72px;
+  height: 72px;
+}
+
+.trainer-row__avatar{
+  width: 72px;
+  height: 72px;
+  border-radius: 999px;
+  background: #E9EDF2;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+/* 3) 안에 있는 아이콘(👤)도 같이 줄이기 */
+.trainer-row__avatarPh{
+  font-size: 22px;   /* 기존 28px이면 22~24 추천 */
+}
+.trainer-row__img{ width:100%; height:100%; object-fit:cover; }
+.trainer-row__placeholder-icon{ font-size:28px; opacity:.6; }
+
+/* 가운데 메인 */
+.trainer-row__main{
+  flex: 1;
+  min-width: 0;
+}
+
+.trainer-row__top{
+  display:flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.trainer-row__topLine{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.trainer-row__title{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.trainer-row__regionInline{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 4px;
+
+  font-size: 14px;
+  font-weight: 600;
+  color: #4B5563;
+
+  line-height: 1;
+}
+
+.trainer-row__regionText{
+  margin-left: 0px;   /* ⭐ 핵심 */
+}
+
+
+.trainer-row__name{ 
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+	}
+
+.trainer-row__chips{
+  display:flex;
+  gap:8px;
+  margin-top:8px;
+}
+
+.gender-pill--inline{
+  height: 22px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid #E4E6EB;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.trainer-row__hatiGender {
+  display: inline-flex;   /* pill들을 옆으로 */
+  gap: 6px;               /* pill 사이 간격 */
+  margin-top: 4px;        /* 이미지 밑 여백 */
+}
+
+.trainer-row__price{
+  top: 12px;     /* ✅ 위아래 위치 */
+  right: 16px;   /* ✅ “끝”으로 붙는 값 (더 끝: 8px, 더 안쪽: 16px) */
+
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0;
+
+  font-weight: 700;
+  color: #1877F2;
+  white-space: nowrap;
+}
+
+
+.trainer-row__priceIcon{ margin-right: 6px; }
+.trainer-row__priceText{ font-size:16px; }
+.trainer-row__priceUnit{ margin-left:0; font-size:16px;} 
+
+.trainer-row__bio{
+  margin-top: 10px;
+  color: #606770;
+  line-height: 1.5;
+}
+
+.trainer-row__bottom{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+}
+
+.trainer-row__actionLine{
+  display:flex;
+  align-items:center;
+  gap:30px;            /* 가격-찜 간격 */
+}
+
+.trainer-row__right{
+  margin-left:auto;
+  position: relative;     
+  display:flex;
+  flex-direction: column;      /* ✅ 세로로 쌓기 */
+  align-items: flex-end;       /* ✅ 오른쪽 정렬 */
+  gap: 12px;
+}
+
+.trainer-row__price--right{
+  font-weight: 700;
+  color: #1877F2;
+  white-space: nowrap;
+}
+
+.trainer-row__btnLine{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+/* ✅ 찜/메모 공통 크기 */
+.trainer-row__fav,
+.trainer-row__memo{
+  height: 34px;
+  min-width: 54px;
+  padding: 0 10px;
+  font-weight: 600;
+   margin-top: auto;
+   font-size: 13px;
+   border-radius: 9px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+
+  box-sizing: border-box;
+  white-space: nowrap;
+}
+
+.trainer-row__fav{
+  border: 1px solid var(--border, #E4E6EB);
+  background: #EEF1F4;
+  color: #111;
+  cursor: pointer;
+  outline: none;         /* 클릭 시 검정 아웃라인도 방지 */
+}
+
+.trainer-row__fav:focus,
+.trainer-row__fav:focus-visible{
+  outline: none;
+}
+
+.trainer-row__rightTop{
+  display:flex;
+  justify-content:flex-end;
+}
+
+.trainer-row__rightBottom{
+  margin-top:8px;     /* 아래로 밀기 */
+}
+
+.trainer-row__pinSvg{
+  width: 22px;
+  height: 22px;
+  display: inline-block;
+  
+  fill: none;                  /* ✅ 안 칠함 */
+  stroke: #4B5563;             /* ✅ 선 색 */
+  stroke-width: 2;             /* ✅ 선 두께 */
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.trainer-row__hatiUnder{
+  display: flex;
+  justify-content: center;
+  gap: 8px;            /* HATI-성별 간격 */
+  margin-top: 8px;     /* 아바타 아래 여백 (원하면 6px로 더 줄여도 됨) */
+  flex-wrap:nowrap;     /* ✅ 줄바꿈 금지 */
+   align-items: center;
+}
+
+.trainer-row__fav-btn.is-active{
+  border-color:#1877F2;
+  background:#EAF2FF;
+  color:#1877F2;
+}
+
+/* 찜 버튼 활성 (오른쪽 이미지 느낌) */
+.trainer-row__fav.is-active{
+  border-color: #FF3B30;
+  background: rgba(255, 59, 48, 0.08);
+  color: #FF3B30;
+}
+
+.trainer-row__favIcon::before{
+  content: "♡";
+  font-size: 15px;
+  line-height: 1;
+  color: #606770;
+}
+
+.trainer-row__fav.is-active .trainer-row__favIcon::before{
+  content: "♥";
+  font-size: 18px;
+  line-height: 1;
+  color: #FF3B30;
+}
+
+/* 메모 버튼 */
+.trainer-row__memo{
+  border: 1px solid var(--border, #E4E6EB);
+  background: #EEF1F4;
+  color: #111;
+  cursor: pointer;
+}
+
+.trainer-row__memo.is-hidden{
+  display: none;
+}
+
+.trainer-row__actions{
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;  /* ✅ 오른쪽 정렬 */
+  align-items: center;
+  gap: 12px;
+}
+
+.trainer-row__name-link{
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}

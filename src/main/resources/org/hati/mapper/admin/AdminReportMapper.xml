@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.hati.admin.mapper.AdminReportMapper">
+
+	<select id="selectReportsByTargetAccount"
+		resultType="org.hati.admin.report.domain.AdminReportListItemDTO">
+		SELECT
+		report_id AS reportId,
+		target_type AS targetType,
+		target_id AS targetId,
+		status,
+		TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI:SS') AS createdAt,
+		reporter_nickname AS reporterNickname,
+		reporter_handle AS reporterHandle,
+		content
+		FROM vw_reports_admin
+		WHERE target_account_id = #{accountId}
+		ORDER BY status ASC, created_at DESC
+	</select>
+
+	<select id="selectReportsByTarget"
+		resultType="org.hati.admin.report.domain.AdminReportListItemDTO">
+		SELECT
+		r.report_id AS reportId,
+		r.target_type AS targetType,
+		r.target_id AS targetId,
+		r.status AS status,
+		TO_CHAR(r.created_at, 'YYYY-MM-DD HH24:MI:SS') AS createdAt,
+		r.content AS content,
+		d.nickname AS reporterNickname,
+		d.handle AS reporterHandle
+		FROM reports r
+		JOIN vw_account_display d ON d.account_id = r.reporter_account_id
+		WHERE r.target_type = #{targetType}
+		AND r.target_id = #{targetId}
+		ORDER BY r.created_at DESC
+	</select>
+
+</mapper>

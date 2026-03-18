@@ -1,0 +1,530 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.hati.post.mapper.PostMapper">
+
+  <!-- =====================================================
+       1) Feed ResultMap
+       - PostFeedDTO + (tags/imageUrls) 컬렉션 매핑
+       ===================================================== -->
+  <resultMap id="feedMap" type="org.hati.post.vo.PostFeedDTO">
+    <id property="postId" column="postId"/>
+
+    <!-- 작성자 메타 (표시 + 권한판별용 writerAccountId) -->
+    <result property="writerDisplayName"     column="writerDisplayName"/>
+    <result property="writerHandle"          column="writerHandle"/>
+    <result property="writerProfileImageUrl" column="writerProfileImageUrl"/>
+    <result property="writerHatiCode"        column="writerHatiCode"/>
+    <result property="writerAccountId"       column="writerAccountId"/>
+    <result property="writerGender"          column="writerGender"/>
+
+    <!-- 본문/시간 -->
+    <result property="createdAtStr" column="createdAtStr"/>
+    <result property="content"      column="content"/>
+
+    <!-- 카운트 -->
+    <result property="likeCount"    column="likeCount"/>
+    <result property="commentCount" column="commentCount"/>
+    <result property="viewCount"    column="viewCount"/>
+
+    <!-- 내 상태(0/1) -->
+    <result property="bookmarked" column="bookmarked"/>
+    <result property="liked"      column="liked"/>
+    <result property="pinned"     column="pinned"/>
+
+    <!-- 태그/이미지 컬렉션 -->
+    <collection property="tags"      ofType="string" column="postId" select="selectTagsByPostId"/>
+    <collection property="imageUrls" ofType="string" column="postId" select="selectPostImageUrlsByPostId"/>
+  </resultMap>
+
+  <!-- =====================================================
+       2) Home Feed 조회
+       - vw_posts_with_counts 기반 최신순 페이징 (B안: ROW_NUMBER 방식)
+       ===================================================== -->
+  <select id="selectHomeFeed" resultMap="feedMap">
+    SELECT * FROM (
+      SELECT inner_q.*, ROW_NUMBER() OVER (ORDER BY inner_q.created_at DESC) AS rn
+      FROM (
+        SELECT
+          v.post_id AS postId,
+          v.nickname AS writerDisplayName,
+          v.handle AS writerHandle,
+          v.profile_image_url AS writerProfileImageUrl,
+          v.hati_code AS writerHatiCode,
+          v.account_id AS writerAccountId,
+          up.gender AS writerGender,
+          v.created_at AS created_at,
+          TO_CHAR(v.created_at, 'YYYY-MM-DD HH24:MI') AS createdAtStr,
+          v.content AS content,
+          v.like_count AS likeCount,
+          v.comment_count AS commentCount,
+          v.view_count AS viewCount,
+
+          CASE
+            WHEN #{accountId, jdbcType=NUMERIC} IS NULL THEN 0
+            WHEN EXISTS (
+              SELECT 1 FROM SCOTT.post_bookmarks pb
+               WHERE pb.post_id = v.post_id
+                 AND pb.account_id = #{accountId, jdbcType=NUMERIC}
+            ) THEN 1
+            ELSE 0
+          END AS bookmarked,
+
+          CASE
+            WHEN #{accountId, jdbcType=NUMERIC} IS NULL THEN 0
+            WHEN EXISTS (
+              SELECT 1 FROM SCOTT.post_like pl
+               WHERE pl.post_id = v.post_id
+                 AND pl.account_id = #{accountId, jdbcType=NUMERIC}
+            ) THEN 1
+            ELSE 0
+          END AS liked,
+
+          0 AS pinned
+
+        FROM SCOTT.vw_posts_with_counts v
+        LEFT JOIN SCOTT.user_profile up ON up.account_id = v.account_id
+      ) inner_q
+    )
+    WHERE rn BETWEEN (#{offset, jdbcType=NUMERIC} + 1)
+                AND (#{offset, jdbcType=NUMERIC} + #{limit, jdbcType=NUMERIC})
+  </select>
+
+  <select id="selectPostDetailByPostId" resultMap="feedMap">
+    SELECT
+      v.post_id AS postId,
+      v.nickname AS writerDisplayName,
+      v.handle AS writerHandle,
+      v.profile_image_url AS writerProfileImageUrl,
+      v.hati_code AS writerHatiCode,
+      v.account_id AS writerAccountId,
+      up.gender AS writerGender,
+      TO_CHAR(v.created_at, 'YYYY-MM-DD HH24:MI') AS createdAtStr,
+      v.content AS content,
+      v.like_count AS likeCount,
+      v.comment_count AS commentCount,
+      v.view_count AS viewCount,
+
+      CASE
+        WHEN #{accountId, jdbcType=NUMERIC} IS NULL THEN 0
+        WHEN EXISTS (
+          SELECT 1
+            FROM SCOTT.post_bookmarks pb
+           WHERE pb.post_id = v.post_id
+             AND pb.account_id = #{accountId, jdbcType=NUMERIC}
+        ) THEN 1
+        ELSE 0
+      END AS bookmarked,
+
+      CASE
+        WHEN #{accountId, jdbcType=NUMERIC} IS NULL THEN 0
+        WHEN EXISTS (
+          SELECT 1
+            FROM SCOTT.post_like pl
+           WHERE pl.post_id = v.post_id
+             AND pl.account_id = #{accountId, jdbcType=NUMERIC}
+        ) THEN 1
+        ELSE 0
+      END AS liked,
+
+      0 AS pinned
+
+    FROM SCOTT.vw_posts_with_counts v
+    LEFT JOIN SCOTT.user_profile up
+      ON up.account_id = v.account_id
+    WHERE v.post_id = #{postId, jdbcType=NUMERIC}
+  </select>
+
+  <select id="existsViewCount" resultType="int">
+    SELECT COUNT(*)
+      FROM SCOTT.view_count
+     WHERE post_id = #{postId, jdbcType=NUMERIC}
+       AND account_id = #{accountId, jdbcType=NUMERIC}
+  </select>
+
+  <insert id="insertViewCount">
+    INSERT INTO SCOTT.view_count (
+      post_id,
+      account_id
+    ) VALUES (
+      #{postId, jdbcType=NUMERIC},
+      #{accountId, jdbcType=NUMERIC}
+    )
+  </insert>
+
+  <!-- =====================================================
+       3) 태그/이미지 조회
+       ===================================================== -->
+  <select id="selectTagsByPostId" resultType="string">
+    SELECT t.tag_text
+      FROM SCOTT.tag_links tl
+      JOIN SCOTT.tags t ON t.tag_id = tl.tag_id
+     WHERE tl.post_id = #{postId, jdbcType=NUMERIC}
+     ORDER BY t.tag_text
+  </select>
+
+  <select id="selectPostImageUrlsByPostId" resultType="string">
+    SELECT mf.url
+      FROM SCOTT.media_files mf
+     WHERE mf.ref_type = 'POST'
+       AND mf.ref_id = #{postId, jdbcType=NUMERIC}
+     ORDER BY mf.created_at ASC
+  </select>
+  
+	<select id="selectPostImagesForEdit" resultType="org.hati.post.vo.PostEditImageVO">
+	  SELECT
+	    mf.file_id AS mediaId,
+	    mf.url     AS url
+	  FROM SCOTT.media_files mf
+	  WHERE mf.ref_type = 'POST'
+	    AND mf.ref_id = #{postId, jdbcType=NUMERIC}
+	  ORDER BY mf.created_at ASC
+	</select>
+	
+  <!-- =====================================================
+       4) 게시글 작성(INSERT)
+       ===================================================== -->
+  <insert id="insertPost" parameterType="org.hati.post.vo.PostVO">
+    <selectKey keyProperty="postId" resultType="long" order="BEFORE">
+      SELECT SCOTT.SEQ_POSTS.NEXTVAL FROM dual
+    </selectKey>
+
+    INSERT INTO SCOTT.posts (post_id, account_id, content, created_at)
+    VALUES (
+      #{postId, jdbcType=NUMERIC},
+      #{accountId, jdbcType=NUMERIC},
+      #{content, jdbcType=VARCHAR},
+      SYSDATE
+    )
+  </insert>
+
+  <!-- =====================================================
+       5) 태그 사전(tags) + 연결(tag_links)
+       ===================================================== -->
+  <select id="selectTagIdByText" resultType="java.lang.Long">
+    SELECT tag_id
+      FROM SCOTT.tags
+     WHERE tag_text = #{tagText, jdbcType=VARCHAR}
+  </select>
+
+  <!-- tag_id는 트리거(trg_tags_bi)가 채움 -->
+  <insert id="insertTag">
+    INSERT INTO SCOTT.tags (tag_text)
+    VALUES (#{tagText, jdbcType=VARCHAR})
+  </insert>
+
+  <insert id="insertTagLink">
+    INSERT INTO SCOTT.tag_links (tag_id, post_id)
+    VALUES (#{tagId, jdbcType=NUMERIC}, #{postId, jdbcType=NUMERIC})
+  </insert>
+
+  <!-- =====================================================
+       6) 수정(U): 작성자만 수정 진입/저장
+       ===================================================== -->
+  <select id="selectEditTarget" resultType="org.hati.post.vo.PostEditVO">
+    SELECT p.post_id AS postId,
+           p.content  AS content
+      FROM SCOTT.posts p
+     WHERE p.post_id   = #{postId, jdbcType=NUMERIC}
+       AND p.account_id = #{accountId, jdbcType=NUMERIC}
+  </select>
+
+  <update id="updatePost">
+    UPDATE SCOTT.posts
+       SET content = #{content, jdbcType=VARCHAR}
+     WHERE post_id = #{postId, jdbcType=NUMERIC}
+       AND account_id = #{accountId, jdbcType=NUMERIC}
+  </update>
+
+  <!-- 수정/삭제 공용: postId 기준 tag_links 정리 -->
+  <delete id="deleteTagLinksByPostId">
+    DELETE FROM SCOTT.tag_links
+     WHERE post_id = #{postId, jdbcType=NUMERIC}
+  </delete>
+
+  <!-- =====================================================
+       7) 삭제(D): FK 자식 먼저 삭제 후 posts 삭제
+       ===================================================== -->
+  <delete id="deletePinnedByPostId">
+    DELETE FROM SCOTT.user_pinned_post
+     WHERE post_id = #{postId, jdbcType=NUMERIC}
+  </delete>
+
+  <delete id="deleteCommentsByPostId">
+    DELETE FROM SCOTT.comments
+     WHERE post_id = #{postId, jdbcType=NUMERIC}
+  </delete>
+
+  <delete id="deleteNotInterestedByPostId">
+    DELETE FROM SCOTT.not_interested
+     WHERE post_id = #{postId, jdbcType=NUMERIC}
+  </delete>
+
+  <delete id="deleteBookmarksByPostId">
+    DELETE FROM SCOTT.post_bookmarks
+     WHERE post_id = #{postId, jdbcType=NUMERIC}
+  </delete>
+
+  <delete id="deleteLikesByPostId">
+    DELETE FROM SCOTT.post_like
+     WHERE post_id = #{postId, jdbcType=NUMERIC}
+  </delete>
+
+  <delete id="deleteViewCountByPostId">
+    DELETE FROM SCOTT.view_count
+     WHERE post_id = #{postId, jdbcType=NUMERIC}
+  </delete>
+
+  <!-- 마지막: posts 삭제(작성자만) -->
+  <delete id="hardDeletePost">
+    DELETE FROM SCOTT.posts
+     WHERE post_id = #{postId, jdbcType=NUMERIC}
+       AND account_id = #{accountId, jdbcType=NUMERIC}
+  </delete>
+
+  <!-- =====================================================
+       8) Explore 피드 조회 (무한스크롤 페이징)
+       - B안: 동적 정렬(sort=top → likeCount DESC) + HATI 필터
+       ===================================================== -->
+  <select id="selectExploreFeedPaged" resultMap="feedMap">
+    SELECT * FROM (
+      SELECT inner_q.*, ROW_NUMBER() OVER (
+        ORDER BY
+          <choose>
+            <when test="sort == 'top'">inner_q.likeCount DESC, inner_q.created_at DESC</when>
+            <otherwise>inner_q.created_at DESC</otherwise>
+          </choose>
+      ) AS rn
+      FROM (
+        SELECT
+          v.post_id AS postId,
+          v.nickname AS writerDisplayName,
+          v.handle AS writerHandle,
+          v.profile_image_url AS writerProfileImageUrl,
+          v.hati_code AS writerHatiCode,
+          v.account_id AS writerAccountId,
+          up.gender AS writerGender,
+
+          v.created_at AS created_at,
+          TO_CHAR(v.created_at, 'YYYY-MM-DD HH24:MI') AS createdAtStr,
+          v.content AS content,
+          v.like_count AS likeCount,
+          v.comment_count AS commentCount,
+          v.view_count AS viewCount,
+
+          CASE
+            WHEN #{accountId, jdbcType=NUMERIC} IS NULL THEN 0
+            WHEN EXISTS (
+              SELECT 1
+                FROM SCOTT.post_bookmarks pb
+               WHERE pb.post_id = v.post_id
+                 AND pb.account_id = #{accountId, jdbcType=NUMERIC}
+            ) THEN 1
+            ELSE 0
+          END AS bookmarked,
+
+          CASE
+            WHEN #{accountId, jdbcType=NUMERIC} IS NULL THEN 0
+            WHEN EXISTS (
+              SELECT 1
+                FROM SCOTT.post_like pl
+               WHERE pl.post_id = v.post_id
+                 AND pl.account_id = #{accountId, jdbcType=NUMERIC}
+            ) THEN 1
+            ELSE 0
+          END AS liked,
+
+          0 AS pinned
+
+        FROM SCOTT.vw_posts_with_counts v
+        LEFT JOIN SCOTT.user_profile up
+          ON up.account_id = v.account_id
+
+        <where>
+          <if test="q != null and q != ''">
+            <choose>
+
+              <!-- 1) 태그만 -->
+              <when test="type == 'tag'">
+                AND EXISTS (
+                  SELECT 1
+                    FROM SCOTT.tag_links tl
+                    JOIN SCOTT.tags t ON t.tag_id = tl.tag_id
+                   WHERE tl.post_id = v.post_id
+                     AND t.tag_text LIKE '%' || #{q} || '%'
+                )
+              </when>
+
+              <!-- 2) 내용만 -->
+              <when test="type == 'content'">
+                AND v.content LIKE '%' || #{q} || '%'
+              </when>
+
+              <!-- 3) 유저만(닉/핸들/유저명) -->
+              <when test="type == 'user'">
+                AND (
+                  v.nickname LIKE '%' || #{q} || '%'
+                  OR v.handle LIKE '%' || #{q} || '%'
+                  <!-- OR v.login_id LIKE '%' || #{q} || '%' -->
+                )
+              </when>
+
+              <!-- 4) 전체(all/default): 내용 + 유저 + 태그 -->
+              <otherwise>
+				  AND (
+				    v.content LIKE '%' || #{q} || '%'
+				    OR v.nickname LIKE '%' || #{q} || '%'
+				    OR v.handle   LIKE '%' || #{q} || '%'
+				    OR EXISTS (
+				      SELECT 1
+				        FROM SCOTT.tag_links tl
+				        JOIN SCOTT.tags t ON t.tag_id = tl.tag_id
+				       WHERE tl.post_id = v.post_id
+				         AND t.tag_text LIKE '%' || REPLACE(#{q}, '#', '') || '%'
+				    )
+				  )
+				</otherwise>
+
+            </choose>
+          </if>
+
+          <!-- 태그 클릭(/explore?tag=xxx) 정확매칭 -->
+          <if test="tag != null and tag != ''">
+            AND EXISTS (
+              SELECT 1
+                FROM SCOTT.tag_links tl
+                JOIN SCOTT.tags t ON t.tag_id = tl.tag_id
+               WHERE tl.post_id = v.post_id
+                 AND t.tag_text = #{tag}
+            )
+          </if>
+
+          <!-- HATI 필터 -->
+          <if test="hatiList != null and hatiList.size() > 0">
+            AND up.hati_code IN
+            <foreach item="h" collection="hatiList" open="(" separator="," close=")">
+              #{h}
+            </foreach>
+          </if>
+
+        </where>
+
+      ) inner_q
+    )
+    WHERE rn BETWEEN (#{offset, jdbcType=NUMERIC} + 1)
+                AND (#{offset, jdbcType=NUMERIC} + #{limit, jdbcType=NUMERIC})
+  </select>
+
+  <!-- =====================================================
+       9) 프로필 탭: 특정 작성자의 게시글 조회 (대표글 최상단)
+       - A안에서 추가: viewerAccountId / writerAccountId 분리
+       ===================================================== -->
+  <select id="selectPostsByWriter" resultMap="feedMap">
+    SELECT
+      v.post_id AS postId,
+      v.nickname AS writerDisplayName,
+      v.handle AS writerHandle,
+      v.profile_image_url AS writerProfileImageUrl,
+      v.hati_code AS writerHatiCode,
+      v.account_id AS writerAccountId,
+      up.gender AS writerGender,
+      TO_CHAR(v.created_at, 'YYYY-MM-DD HH24:MI') AS createdAtStr,
+      v.content AS content,
+      v.like_count AS likeCount,
+      v.comment_count AS commentCount,
+      v.view_count AS viewCount,
+
+      CASE
+        WHEN #{viewerAccountId, jdbcType=NUMERIC} IS NULL THEN 0
+        WHEN EXISTS (
+          SELECT 1
+            FROM SCOTT.post_bookmarks pb
+           WHERE pb.post_id = v.post_id
+             AND pb.account_id = #{viewerAccountId, jdbcType=NUMERIC}
+        ) THEN 1
+        ELSE 0
+      END AS bookmarked,
+
+      CASE
+        WHEN #{viewerAccountId, jdbcType=NUMERIC} IS NULL THEN 0
+        WHEN EXISTS (
+          SELECT 1
+            FROM SCOTT.post_like pl
+           WHERE pl.post_id = v.post_id
+             AND pl.account_id = #{viewerAccountId, jdbcType=NUMERIC}
+        ) THEN 1
+        ELSE 0
+      END AS liked,
+
+      CASE
+        WHEN upp.post_id IS NOT NULL THEN 1
+        ELSE 0
+      END AS pinned
+
+    FROM SCOTT.vw_posts_with_counts v
+    LEFT JOIN SCOTT.user_profile up
+      ON up.account_id = v.account_id
+    LEFT JOIN SCOTT.user_pinned_post upp
+      ON upp.account_id = #{writerAccountId, jdbcType=NUMERIC}
+     AND upp.post_id = v.post_id
+    WHERE v.account_id = #{writerAccountId, jdbcType=NUMERIC}
+    ORDER BY
+      CASE WHEN upp.post_id IS NOT NULL THEN 0 ELSE 1 END,
+      v.created_at DESC
+  </select>
+
+  <!-- 프로필 미디어 탭: 특정 작성자의 이미지 썸네일 목록 조회 (이미지 1장 = 1행) -->
+  <select id="selectPostMediaThumbsByWriter" resultType="org.hati.post.vo.PostMediaThumbDTO">
+    SELECT
+      p.post_id AS postId,
+      mf.url    AS imageUrl
+    FROM SCOTT.posts p
+    JOIN SCOTT.media_files mf
+      ON mf.ref_type = 'POST'
+     AND mf.ref_id = p.post_id
+    WHERE p.account_id = #{writerAccountId, jdbcType=NUMERIC}
+    ORDER BY
+      p.created_at DESC,
+      mf.created_at ASC
+  </select>
+
+  <!-- =====================================================
+       10) 대표글(고정핀)
+       ===================================================== -->
+  <select id="selectPinnedPostIdByAccountId" resultType="long">
+    SELECT post_id
+      FROM SCOTT.user_pinned_post
+     WHERE account_id = #{accountId, jdbcType=NUMERIC}
+  </select>
+
+  <select id="existsMyPost" resultType="int">
+    SELECT COUNT(*)
+      FROM SCOTT.posts
+     WHERE post_id = #{postId, jdbcType=NUMERIC}
+       AND account_id = #{accountId, jdbcType=NUMERIC}
+  </select>
+
+  <update id="upsertPinnedPost">
+    MERGE INTO SCOTT.user_pinned_post t
+    USING (
+      SELECT
+        #{accountId, jdbcType=NUMERIC} AS account_id,
+        #{postId, jdbcType=NUMERIC} AS post_id
+      FROM dual
+    ) s
+    ON (t.account_id = s.account_id)
+    WHEN MATCHED THEN
+      UPDATE SET t.post_id = s.post_id
+    WHEN NOT MATCHED THEN
+      INSERT (account_id, post_id)
+      VALUES (s.account_id, s.post_id)
+  </update>
+
+  <delete id="deletePinnedPostByAccountId">
+    DELETE FROM SCOTT.user_pinned_post
+     WHERE account_id = #{accountId, jdbcType=NUMERIC}
+  </delete>
+
+</mapper>

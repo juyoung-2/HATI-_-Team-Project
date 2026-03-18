@@ -1,0 +1,727 @@
+/* trainer_list.css */
+
+/* =========================================================
+   [공통/테마] 페이지 공통 변수
+   담당: 트레이너 화면 전체 공통 테마
+   ========================================================= */
+:root{
+  --bg: #F0F2F5;
+  --text: #050505;
+  --sub: #606770;
+  --border: #E4E6EB;
+  --primary: #1877F2;
+  --danger: #FF0000;
+
+  --card-bg: #FFFFFF;
+  --radius: 12px;
+
+  --surface: #EEF1F4;
+  --surface-hover: #E9EDF1;
+}
+
+/* =========================================================
+   [레이아웃] 페이지 기본 구조
+   담당: trainer-page / trainer-container / section 공통 레이아웃
+   ========================================================= */
+.trainer-page{
+  min-height: 100%;
+  background: var(--bg);
+}
+
+.trainer-page .trainer-container{
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.trainer-page #trainerCardWrap{
+  height: auto;
+  max-height: none;
+  min-width: 0;
+}
+
+.trainer-page .section{
+  margin-top: 24px;
+}
+
+.trainer-page .section-title{
+  font-size: 23px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 12px 0;
+}
+
+.trainer-header{
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+
+.trainer-title{
+  font-size: 31px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 16px 0;
+}
+
+/* =========================================================
+   [검색영역] 검색바 / 검색 패널 / 필터 버튼
+   담당: 상단 검색창 영역 UI
+   ========================================================= */
+.trainer-searchbar,
+.trainer-search-panel,
+.searchbar-row{
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.trainer-searchbar{
+  display: block;
+}
+
+.trainer-search-panel{
+  background: #ffffff;
+  border: 1px solid #E4E6EB;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.06);
+  margin-bottom: 16px;
+}
+
+.searchbar-row{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0;
+  margin-bottom: 0;
+  background: transparent;
+  border: 0;
+}
+
+.search-input-wrap{
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  background: #e9edf2;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  box-shadow: none;
+  box-sizing: border-box;
+  transition: background-color .15s ease,
+              border-color .15s ease,
+              box-shadow .15s ease;
+}
+
+.search-input-wrap:hover{
+  background: #e3e8ee;
+}
+
+.search-input-wrap:focus-within{
+  background: #ffffff;
+  border-color: #d7dde4;
+  box-shadow: 0 0 0 3px rgba(24, 119, 242, 0.12);
+}
+
+.search-icon{
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  font-size: 18px;
+  pointer-events: none;
+}
+
+.search-input{
+  width: 100%;
+  height: 100%;
+  border: 0;
+  outline: none;
+  border-radius: 999px;
+  padding: 0 16px 0 44px;
+  background: transparent;
+  font-size: 15px;
+  color: #374151;
+  box-sizing: border-box;
+}
+
+.search-input::placeholder{
+  color: #6b7280;
+}
+
+.search-submit-btn{
+  display: none;
+}
+
+.filter-icon-btn{
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  border: 1px solid #E4E6EB;
+  background: #F7F8FA;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  box-sizing: border-box;
+  transition: background-color .15s ease,
+              border-color .15s ease,
+              box-shadow .15s ease;
+}
+
+.filter-icon-btn:hover{
+  background: #EEF1F4;
+  border-color: #d7dde4;
+}
+
+.filter-icon-btn:focus{
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(24,119,242,0.10);
+}
+
+#openFilterBtn{
+  position: relative;
+  font-size: 0;
+  line-height: 0;
+}
+/*
+#openFilterBtn::before{
+  content: "\2699\FE0F";
+  font-size: 18px;
+  line-height: 1;
+  display: block;
+  font-family: "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif;
+}*/
+
+/* =========================================================
+   [뷰모드 탭] 프로필 위주 / 정보 위주 전환
+   담당: 상단 viewMode 토글 탭
+   ========================================================= */
+.viewmode-row{
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+
+  margin-top: 20px;
+  display: flex;
+  border: 1px solid #dfe3e8;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #f3f4f6;
+}
+
+.vm-chip{
+  min-width: 0;
+  flex: 1;
+  position: relative;
+  display: flex;
+  margin: 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.vm-chip input[type="radio"]{
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.vm-chip span{
+  min-width: 0;
+  box-sizing: border-box;
+
+  flex: 1;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 15px;
+  font-weight: 600;
+  color: #6b7280;
+  background: #f3f4f6;
+
+  position: relative;
+  padding: 0;
+}
+
+.vm-chip + .vm-chip span{
+  border-left: 1px solid #dfe3e8;
+}
+
+.vm-chip span::before{
+  display: none;
+  content: none;
+}
+
+.vm-chip input[type="radio"]:checked + span{
+  background: #ffffff;
+  color: #1877f2;
+}
+
+.vm-chip input[type="radio"]:checked + span::after{
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: #1877f2;
+}
+
+/* =========================================================
+   [모달] 필터 모달 레이아웃
+   담당: 필터 팝업 공통 구조
+   ========================================================= */
+.no-scroll{
+  overflow: hidden;
+}
+
+.modal{
+  position: fixed;
+  inset: 0;
+  display: none;
+  z-index: 9999;
+}
+
+.modal.is-open{
+  display: block;
+}
+
+.modal-overlay{
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+}
+
+.modal-panel{
+  position: relative;
+  width: min(720px, calc(100vw - 24px));
+  max-height: calc(100vh - 24px);
+  margin: 12px auto;
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 12px 36px rgba(0,0,0,0.18);
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.modal-header{
+  padding: 14px 16px;
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  flex: 0 0 auto;
+}
+
+.modal-body{
+  padding: 16px;
+}
+
+.modal-footer{
+  padding: 12px 16px 16px;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  border-top: 1px solid var(--border);
+  flex: 0 0 auto;
+}
+
+/* =========================================================
+   [필터 패널] 필터 블록 / 제목 / 액션 버튼
+   담당: 필터 모달 내부 레이아웃
+   ========================================================= */
+.filter-box{
+  width: 100%;
+  border: 1px solid var(--border);
+  background: #fff;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.filter-summary{
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--sub);
+  font-weight: 600;
+}
+
+.filter-box summary::-webkit-details-marker{
+  display: none;
+}
+
+.filter-panel{
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.filter-section .filter-title{
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.filter-actions{
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding-top: 8px;
+}
+
+.btn-outline{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--sub);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-primary{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid var(--primary);
+  background: var(--primary);
+  color: #fff;
+  cursor: pointer;
+}
+
+/* =========================================================
+   [필터 칩/체크] 라디오 / 체크박스 / 텍스트형 행
+   담당: 필터 옵션 선택 UI
+   ========================================================= */
+.filter-row{
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filter-grid{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.chip-check input,
+.chip-radio input{
+  accent-color: var(--primary);
+}
+
+.chip-check,
+.chip-radio{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  user-select: none;
+  color: var(--text);
+  background: #fff;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.chip-check span,
+.chip-radio span{
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.filter-row--plain{
+  gap: 18px;
+  font-size: 18px;
+}
+
+.filter-row.filter-row--plain{
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.filter-row--plain .chip-radio,
+.filter-row--plain .chip-check{
+  border: 0;
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+  font-size: 15px;
+}
+
+.plain-radio{
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  line-height: 1.2;
+}
+
+/* =========================================================
+   [필터 스크롤] HATI/지역 선택 스크롤 영역
+   담당: 필터 내부 스크롤 UI
+   ========================================================= */
+.filter-scroll{
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.filter-scroll.rows-3{
+  max-height: calc(46px * 3 + 8px * 2);
+  overflow-y: auto;
+}
+
+.filter-scroll::-webkit-scrollbar{
+  width: 8px;
+}
+
+.filter-scroll::-webkit-scrollbar-thumb{
+  background: rgba(0,0,0,0.18);
+  border-radius: 999px;
+}
+
+.filter-scroll::-webkit-scrollbar-track{
+  background: transparent;
+}
+
+.filter-scroll--hmbti .chip-check,
+.filter-scroll--hmbti .chip-radio,
+.filter-scroll--district .chip-check,
+.filter-scroll--district .chip-radio{
+  font-size: 13px;
+}
+
+.filter-scroll--hmbti .chip-check span,
+.filter-scroll--district .chip-check span{
+  font-size: 13px;
+}
+
+.filter-scroll--hmbti input,
+.filter-scroll--district input{
+  transform: scale(0.95);
+}
+
+/* =========================================================
+   [리스트/그리드] 트레이너 카드/로우 배치
+   담당: 추천/검색 결과 목록 배치
+   ========================================================= */
+.trainer-grid{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  align-items: start;
+}
+
+.trainer-grid > .empty-state{
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
+@media (max-width: 900px){
+  .trainer-grid{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px){
+  .trainer-grid{
+    grid-template-columns: 1fr;
+  }
+}
+
+.trainer-list{
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* =========================================================
+   [빈 상태/보조 버튼] empty-state / 초기화 pill
+   담당: 검색결과/추천영역 보조 UI
+   ========================================================= */
+.empty-state{
+  width: 100%;
+  padding: 28px 16px;
+  text-align: center;
+  color: var(--sub);
+  background: rgba(255,255,255,0.7);
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  box-sizing: border-box;
+}
+
+.pill-reset{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 8px;
+  padding: 3px 10px;
+  font-size: 12px;
+  line-height: 1;
+  border: 1px solid var(--border, #E4E6EB);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--sub, #606770);
+  text-decoration: none;
+}
+
+.pill-reset:hover{
+  border-color: #cfd3d8;
+  color: var(--text, #050505);
+}
+
+.pill-reset:active{
+  transform: translateY(1px);
+}
+
+/* =========================================================
+   [HATI 필터 배지 - 기존 코드]
+   담당: 필터 모달 내 HATI/카테고리 계열 뱃지
+   ※ 현재 트레이너 본문 HATI 배지와는 별도 체계
+   ========================================================= */
+.hmbti-badge{
+  font-weight: 500;
+  font-size: 12px;
+}
+
+.hmbti-HFIT{ color:#FF6B6B; background:#FFE5E5; }
+.hmbti-HCAL{ color:#4ECDC4; background:#E0F7F5; }
+.hmbti-HSTR{ color:#FF8C42; background:#FFE8DB; }
+.hmbti-HYOG{ color:#A78BFA; background:#EDE9FE; }
+.hmbti-HSPO{ color:#10B981; background:#D1FAE5; }
+.hmbti-HOUT{ color:#059669; background:#D1FAE5; }
+.hmbti-HSWM{ color:#3B82F6; background:#DBEAFE; }
+.hmbti-HMIX{ color:#8B5CF6; background:#EDE9FE; }
+
+/* =========================================================
+   [성별 아이콘] trainer-row / trainer-card 공통
+   담당: 성별 pill + SVG 아이콘
+   수정사항:
+   - 아이콘 크기 소폭 확대
+   - 선 굵기 증가
+   - badge 대비 1px 아래로 내려 시각 정렬 보정
+   ========================================================= */
+.gender-pill{
+  position: relative;
+  top: 1px; /* ✅ 하티배지보다 살짝 위로 떠 보이는 느낌 보정 */
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border-radius: 999px;
+
+  background: rgba(255,255,255,.92);
+  border: 1px solid #e4e6eb;
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  vertical-align: middle;
+}
+
+.gender-pill__icon{
+  width: 13px;   /* ✅ 기존보다 확대 */
+  height: 15px;  /* ✅ 기존보다 확대 */
+  display: block;
+}
+
+.gender-pill__icon circle,
+.gender-pill__icon line,
+.gender-pill__icon polyline{
+  fill: none;
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.gender-pill__icon--male circle,
+.gender-pill__icon--male line,
+.gender-pill__icon--male polyline{
+  stroke: #4A90D9;
+}
+
+.gender-pill__icon--female circle,
+.gender-pill__icon--female line,
+.gender-pill__icon--female polyline{
+  stroke: #E8729A;
+}
+
+/* =========================================================
+   [카드 칩영역] HATI 배지 + 성별 아이콘
+   담당: trainer-card 내부 chips 정렬/간격
+   ========================================================= */
+.trainer-card__chips{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+/* =========================================================
+   [필터 모달] X 닫기 버튼
+   ========================================================= */
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #606770;
+  font-size: 20px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.icon-btn:hover {
+  color: #050505;
+}
+/* =========================================================
+   [접근성] 스크린리더 전용 텍스트
+   담당: 공통 접근성 클래스
+   ========================================================= */
+.sr-only{
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}

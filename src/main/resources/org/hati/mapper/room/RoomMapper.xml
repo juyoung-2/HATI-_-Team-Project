@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="org.hati.room.mapper.RoomMapper">
+
+    <!-- ResultMap 정의 -->
+    <resultMap id="centerDetailMap" type="org.hati.room.vo.CenterVO">
+        <id property="centerId" column="centerId"/>
+        <result property="centerName" column="centerName"/>
+        <result property="centerRegion" column="centerRegion"/>
+        <result property="centerContent" column="centerContent"/>
+        <result property="latitude" column="latitude"/>
+        <result property="longitude" column="longitude"/>
+        <result property="createdAt" column="createdAt"/>
+        <result property="category" column="category"/>
+        <result property="baseFee" column="baseFee"/>
+        <result property="roomCount" column="roomCount"/>
+        <result property="reviewCount" column="reviewCount"/>
+        <result property="avgGrade" column="avgGrade"/>
+        <result property="firstRoomId" column="firstRoomId"/>
+        
+    </resultMap>
+    <!-- 센터 리스트 조회 
+   	 가져올때  지역 필터 가능, 종목 필터 가능, 가격/리뷰 정렬 필터 가능  
+   	 Java에서 roomMapper.getCenterList(params)로 호출
+   	 c.//st.//r. 왜 붙였지? -> 어느 테이블 컬럼인지 명확하게 하기 위함 특히 join이 들어가는 경우 더욱 더 사용한다.
+    -->
+    <!-- 룸, 스포츠 타입, 센터 리뷰가 없더라고 센터는 보여야 하기 때문에 leftjoin INNER JOIN 쓰면 데이터 없는 센터는 통째로 사라짐
+    region이 null 또는 "" → SQL에 안 붙음, 값 있으면: AND c.center_region = '강동구'
+    -->
+    <!-- WHERE 1=1 왜 씀? 동적 조건 AND로 편하게 붙이기위함 1=1 이면..(항상 참인 조건)  -->
+    <!-- GROUP BY 묶는 이유 
+    COUNT(DISTINCT r.room_id) AS roomCount, COUNT(DISTINCT cr.account_id) AS reviewCount, ROUND(AVG(cr.grade), 1) AS avgGrade
+	위 쿼리와 같이 COUNT, AVG 같은 집계함수를 쓰기 위해 묶는다
+     -->
+    <!-- 센터 리스트 조회 -->
+	<select id="getCenterList" parameterType="map" resultType="org.hati.room.vo.CenterVO">
+        SELECT 
+            c.center_id AS centerId,
+            c.center_name AS centerName,
+            c.center_region AS centerRegion,
+            c.center_content AS centerContent,
+            c.latitude,
+            c.longitude,
+            c.created_at AS createdAt,
+            st.category AS category,
+            st.base_fee AS baseFee,
+            COUNT(DISTINCT r.room_id) AS roomCount,
+            COUNT(DISTINCT cr.account_id) AS reviewCount,
+            ROUND(AVG(cr.grade), 1) AS avgGrade,
+            MIN(r.room_id) AS firstRoomId
+        FROM centers c
+        LEFT JOIN rooms r ON c.center_id = r.center_id
+        LEFT JOIN sports_type st ON r.sport_id = st.sport_id
+        LEFT JOIN centers_reviews cr ON c.center_id = cr.center_id
+        WHERE 1=1
+        <if test="region != null and region != ''">
+            AND c.center_region = #{region}
+        </if>
+        <if test="category != null and category != ''">
+            AND st.category = #{category}
+        </if>
+        GROUP BY 
+            c.center_id, 
+            c.center_name, 
+            c.center_region, 
+            c.center_content, 
+            c.latitude, 
+            c.longitude, 
+            c.created_at, 
+            st.category, 
+            st.base_fee
+        <choose>
+            <when test="sortType != null and sortType == 'price_asc'">
+                ORDER BY st.base_fee ASC
+            </when>
+            <when test="sortType != null and sortType == 'price_desc'">
+                ORDER BY st.base_fee DESC
+            </when>
+            <when test="sortType != null and (sortType == 'review' or sortType == 'review_desc')">
+                ORDER BY COUNT(DISTINCT cr.account_id) DESC, ROUND(AVG(cr.grade), 1) DESC, c.created_at DESC
+            </when>
+            <otherwise>
+                ORDER BY c.created_at DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 센터 상세 조회 -->
+    <select id="getCenterDetail" parameterType="int" resultMap="centerDetailMap">
+        SELECT 
+            c.center_id AS centerId,
+            c.center_name AS centerName,
+            c.center_region AS centerRegion,
+            c.center_content AS centerContent,
+            c.latitude,
+            c.longitude,
+            c.created_at AS createdAt,
+            st.category AS category,
+            st.base_fee AS baseFee,
+            COUNT(DISTINCT r.room_id) AS roomCount,
+            COUNT(DISTINCT cr.account_id) AS reviewCount,
+            ROUND(AVG(cr.grade), 1) AS avgGrade
+        FROM centers c
+        LEFT JOIN rooms r ON c.center_id = r.center_id
+        LEFT JOIN sports_type st ON r.sport_id = st.sport_id
+        LEFT JOIN centers_reviews cr ON c.center_id = cr.center_id
+        WHERE c.center_id = #{centerId}
+        GROUP BY 
+            c.center_id, 
+            c.center_name, 
+            c.center_region, 
+            c.center_content, 
+            c.latitude, 
+            c.longitude, 
+            c.created_at, 
+            st.category, 
+            st.base_fee
+    </select>
+
+    <!-- 센터 검색 (검색모드) 센터 이름에 keyword가 들어간 센터들을 찾고 센터 + 종목(category) 단위로 묶어서
+   	방 개수, 리뷰 수, 평균 평점을 계산한 뒤 리뷰 많은 순 → 평점 높은 순 → 최신 순으로 정렬
+   	WHERE c.center_name LIKE '%' || #{keyword} || '%' 왜 이렇게 쓸까? 만약 키워드에 짐을 입력하면...
+   	WHERE c.center_name LIKE '%짐%' 이렇게 실행되고 "강남짐", "우리짐센터" 등 센터 이름에 keyword 포함되면 전부 검색된다.
+	ORDER BY : 리뷰 많은 센터 -> 리뷰 수 같으면 평점 높은 센터 -> 또 같으면 최근 등록 센터   	
+    -->
+    <select id="searchCenters" parameterType="string" resultType="org.hati.room.vo.CenterVO">
+        SELECT 
+            c.center_id AS centerId,
+            c.center_name AS centerName,
+            c.center_region AS centerRegion,
+            c.center_content AS centerContent,
+            c.latitude,
+            c.longitude,
+            c.created_at AS createdAt,
+            st.category AS category,
+            st.base_fee AS baseFee,
+            COUNT(DISTINCT r.room_id) AS roomCount,
+            COUNT(DISTINCT cr.account_id) AS reviewCount,
+            ROUND(AVG(cr.grade), 1) AS avgGrade,
+            MIN(r.room_id) AS firstRoomId
+        FROM centers c
+        LEFT JOIN rooms r ON c.center_id = r.center_id
+        LEFT JOIN sports_type st ON r.sport_id = st.sport_id
+        LEFT JOIN centers_reviews cr ON c.center_id = cr.center_id
+        WHERE c.center_name LIKE '%' || #{keyword} || '%'
+           OR c.center_region LIKE '%' || #{keyword} || '%'
+           OR st.category LIKE '%' || #{keyword} || '%'
+        GROUP BY 
+            c.center_id, 
+            c.center_name, 
+            c.center_region, 
+            c.center_content, 
+            c.latitude, 
+            c.longitude, 
+            c.created_at, 
+            st.category, 
+            st.base_fee
+        ORDER BY c.created_at DESC
+    </select>
+
+    <!-- 페이지네이션 센터 조회 (무한스크롤용) - 정렬 기준이 동적으로 바뀜. 
+    ROW_NUMBER 왜 씀? : 정렬된 전체 센터 목록에 “줄 번호(rn)”를 붙이기 위해서 -> 결과 행마다 1,2,3,4... 번호를 매김
+    1페이지 → rn 1~9, 2페이지 → rn 10~18 이런식으로 아래로 계속 이어짐  (rn > 0 AND rn <= 9)
+     )
+    -->
+    <select id="getPaginatedCenters" parameterType="map" resultType="org.hati.room.vo.CenterVO">
+        SELECT * FROM (
+            SELECT a.*, ROWNUM rnum FROM (
+                SELECT 
+                    c.center_id AS centerId,
+                    c.center_name AS centerName,
+                    c.center_region AS centerRegion,
+                    c.center_content AS centerContent,
+                    c.latitude,
+                    c.longitude,
+                    c.created_at AS createdAt,
+                    st.category AS category,
+                    st.base_fee AS baseFee,
+                    COUNT(DISTINCT r.room_id) AS roomCount,
+                    COUNT(DISTINCT cr.account_id) AS reviewCount,
+                    ROUND(AVG(cr.grade), 1) AS avgGrade,
+                    MIN(r.room_id) AS firstRoomId
+                FROM centers c
+                LEFT JOIN rooms r ON c.center_id = r.center_id
+                LEFT JOIN sports_type st ON r.sport_id = st.sport_id
+                LEFT JOIN centers_reviews cr ON c.center_id = cr.center_id
+                WHERE 1=1
+                <if test="region != null and region != ''">
+                    AND c.center_region = #{region}
+                </if>
+                <if test="category != null and category != ''">
+                    AND st.category = #{category}
+                </if>
+                <if test="date != null and date != ''">
+                    AND EXISTS (
+                        SELECT 1
+                        FROM room_slots rs2
+                        JOIN rooms r2 ON rs2.room_id = r2.room_id
+                        WHERE r2.center_id = c.center_id
+                          AND TO_CHAR(rs2.slot_date, 'YYYY-MM-DD') = #{date}
+                          AND rs2.status = 'AVAILABLE'
+                    )
+                </if>
+                GROUP BY 
+                    c.center_id, 
+                    c.center_name, 
+                    c.center_region, 
+                    c.center_content, 
+                    c.latitude, 
+                    c.longitude, 
+                    c.created_at, 
+                    st.category, 
+                    st.base_fee
+                <choose>
+                    <when test="sortType != null and sortType == 'price_asc'">
+                        ORDER BY st.base_fee ASC
+                    </when>
+                    <when test="sortType != null and sortType == 'price_desc'">
+                        ORDER BY st.base_fee DESC
+                    </when>
+                    <when test="sortType != null and (sortType == 'review' or sortType == 'review_desc')">
+                        ORDER BY reviewCount DESC, ROUND(AVG(cr.grade), 1) DESC, c.created_at DESC
+                    </when>
+                    <otherwise>
+                        ORDER BY c.created_at DESC
+                    </otherwise>
+                </choose>
+            ) a
+            WHERE ROWNUM <![CDATA[<=]]> (#{offset} + #{pageSize})
+        )
+        WHERE rnum <![CDATA[>]]> #{offset}
+    </select>
+
+    <!-- 페이지네이션 검색 조회 -->
+    <select id="getPaginatedSearch" parameterType="map" resultType="org.hati.room.vo.CenterVO">
+        SELECT * FROM (
+            SELECT a.*, ROWNUM rnum FROM (
+                SELECT 
+                    c.center_id AS centerId,
+                    c.center_name AS centerName,
+                    c.center_region AS centerRegion,
+                    c.center_content AS centerContent,
+                    c.latitude,
+                    c.longitude,
+                    c.created_at AS createdAt,
+                    st.category AS category,
+                    st.base_fee AS baseFee,
+                    COUNT(DISTINCT r.room_id) AS roomCount,
+                    COUNT(DISTINCT cr.account_id) AS reviewCount,
+                    ROUND(AVG(cr.grade), 1) AS avgGrade,
+                    MIN(r.room_id) AS firstRoomId
+                FROM centers c
+                LEFT JOIN rooms r ON c.center_id = r.center_id
+                LEFT JOIN sports_type st ON r.sport_id = st.sport_id
+                LEFT JOIN centers_reviews cr ON c.center_id = cr.center_id
+                WHERE c.center_name LIKE '%' || #{keyword} || '%'
+                   OR c.center_region LIKE '%' || #{keyword} || '%'
+                   OR st.category LIKE '%' || #{keyword} || '%'
+                GROUP BY 
+                    c.center_id, 
+                    c.center_name, 
+                    c.center_region, 
+                    c.center_content, 
+                    c.latitude, 
+                    c.longitude, 
+                    c.created_at, 
+                    st.category, 
+                    st.base_fee
+                ORDER BY c.created_at DESC
+            ) a
+            WHERE ROWNUM <![CDATA[<=]]> (#{offset} + #{pageSize})
+        )
+        WHERE rnum <![CDATA[>]]> #{offset}
+    </select>
+
+    <!--  roomId로 룸 정보 조회 (찜 여부 포함) -->
+	<select id="getRoomWithBookmark" resultType="org.hati.room.vo.RoomVO">
+	    SELECT 
+	        r.room_id AS roomId,
+	        r.center_id AS centerId,
+	        r.sport_id AS sportId,
+	        st.category,
+	        st.base_fee AS baseFee,
+	        r.room_id AS roomNumber,
+	        <choose>
+	            <when test="accountId != null">
+	                CASE 
+	                    WHEN EXISTS (
+	                        SELECT 1
+	                        FROM room_booking rb
+	                        WHERE rb.room_id = r.room_id
+	                          AND rb.account_id = #{accountId, jdbcType=INTEGER}
+	                    )
+	                    THEN 1 ELSE 0
+	                END
+	            </when>
+	            <otherwise>
+	                0
+	            </otherwise>
+	        </choose>
+	        AS bookmarked
+	    FROM rooms r
+	    JOIN sports_type st ON r.sport_id = st.sport_id
+	    WHERE r.room_id = #{roomId}
+	</select>
+
+    <!-- centerId로 모든 룸 조회 (찜 여부 포함) -->
+	<select id="getRoomsByCenterWithBookmark" resultType="org.hati.room.vo.RoomVO">
+	    SELECT 
+	        r.room_id AS roomId,
+	        r.center_id AS centerId,
+	        r.sport_id AS sportId,
+	        st.category,
+	        st.base_fee AS baseFee,
+	        r.room_id AS roomNumber,
+	
+	        <choose>
+	            <when test="accountId != null">
+	                CASE 
+	                    WHEN EXISTS (
+	                        SELECT 1
+	                        FROM room_booking rb
+	                        WHERE rb.room_id = r.room_id
+	                          AND rb.account_id = #{accountId, jdbcType=INTEGER}
+	                    )
+	                    THEN 1 ELSE 0
+	                END
+	            </when>
+	            <otherwise>
+	                0
+	            </otherwise>
+	        </choose>
+	        AS bookmarked
+	
+	    FROM rooms r
+	    JOIN sports_type st ON r.sport_id = st.sport_id
+	    WHERE r.center_id = #{centerId}
+	    ORDER BY r.room_id
+	</select>
+
+    <!--
+        헤더 프로필 조회 (hatibMain 상단 프로필 아바타용)
+        ✅ vw_account_display에 gender 추가로 user_profile 별도 JOIN 불필요
+        → displayName(nickname), profileImageUrl, hatiCode, gender, roleType 한 번에 조회
+    -->
+    <select id="getHeaderProfile" parameterType="int" resultType="org.hati.room.vo.HeaderProfileVO">
+        SELECT
+            v.nickname          AS displayName,
+            v.profile_image_url AS profileImageUrl,
+            v.hati_code         AS hatiCode,
+            v.gender            AS gender,
+            v.role_type         AS roleType,
+            v.account_id        AS accountId,
+            v.handle            AS handle
+        FROM vw_account_display v
+        WHERE v.account_id = #{accountId}
+    </select>
+
+</mapper>

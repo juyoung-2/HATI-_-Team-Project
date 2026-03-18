@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="org.hati.reservation.mapper.ReservationMapper">
+
+    <!-- 사용자의 모든 예약 조회 (VIEW 활용) -->
+    <select id="getReservationsByUser" parameterType="int" resultType="org.hati.reservation.vo.ReservationListVO">
+        SELECT 
+            rr.reservation_id       AS reservationId,
+            rr.user_account_id      AS userAccountId,
+            rr.trainer_account_id   AS trainerAccountId,
+            rr.status,
+            rr.pay_type             AS payType,
+            rr.counts,
+            rr.base_fee_snapshot    AS baseFeeSnapshot,
+            rr.price_snapshot       AS priceSnapshot,
+            rr.total_price_snapshot AS totalPriceSnapshot,
+            rr.created_at           AS createdAt,
+            
+            rb.slot_date                AS slotDate,
+            rb.reservation_start_time   AS reservationStartTime,
+            rb.reservation_end_time     AS reservationEndTime,
+            rb.room_id                  AS roomId,
+            rb.user_nickname            AS userNickname,
+            rb.user_handle              AS userHandle,
+            rb.user_hati_code           AS userHatiCode,
+            rb.trainer_nickname         AS trainerNickname,
+            rb.trainer_handle           AS trainerHandle,
+            rb.trainer_hati_code        AS trainerHatiCode,
+            
+            vr.center_id    AS centerId,
+            vr.center_name  AS centerName,
+            vr.category,
+            
+            CASE WHEN cr.center_id IS NOT NULL THEN 1 ELSE 0 END AS hasReview
+            
+        FROM room_reservation rr
+        JOIN vw_reservation_base rb
+            ON rr.reservation_id = rb.reservation_id
+        JOIN vw_rooms vr
+            ON rb.room_id = vr.room_id
+        LEFT JOIN centers_reviews cr
+            ON vr.center_id = cr.center_id
+            AND rr.user_account_id = cr.account_id
+        
+        WHERE rr.user_account_id = #{accountId}
+        
+        ORDER BY rr.created_at DESC
+    </select>
+    
+    <!-- 사용자의 예약 조회 (상태별 필터) -->
+    <select id="getReservationsByUserAndStatus" resultType="org.hati.reservation.vo.ReservationListVO">
+        SELECT 
+            rr.reservation_id       AS reservationId,
+            rr.user_account_id      AS userAccountId,
+            rr.trainer_account_id   AS trainerAccountId,
+            rr.status,
+            rr.pay_type             AS payType,
+            rr.counts,
+            rr.base_fee_snapshot    AS baseFeeSnapshot,
+            rr.price_snapshot       AS priceSnapshot,
+            rr.total_price_snapshot AS totalPriceSnapshot,
+            rr.created_at           AS createdAt,
+            
+            rb.slot_date                AS slotDate,
+            rb.reservation_start_time   AS reservationStartTime,
+            rb.reservation_end_time     AS reservationEndTime,
+            rb.room_id                  AS roomId,
+            rb.user_nickname            AS userNickname,
+            rb.user_handle              AS userHandle,
+            rb.user_hati_code           AS userHatiCode,
+            rb.trainer_nickname         AS trainerNickname,
+            rb.trainer_handle           AS trainerHandle,
+            rb.trainer_hati_code        AS trainerHatiCode,
+            
+            vr.center_id    AS centerId,
+            vr.center_name  AS centerName,
+            vr.category,
+            
+            CASE WHEN cr.center_id IS NOT NULL THEN 1 ELSE 0 END AS hasReview
+            
+        FROM room_reservation rr
+        JOIN vw_reservation_base rb
+            ON rr.reservation_id = rb.reservation_id
+        JOIN vw_rooms vr
+            ON rb.room_id = vr.room_id
+        LEFT JOIN centers_reviews cr
+            ON vr.center_id = cr.center_id
+            AND rr.user_account_id = cr.account_id
+        
+        WHERE rr.user_account_id = #{accountId}
+          AND rr.status = #{status}
+        
+        ORDER BY rr.created_at DESC
+    </select>
+    
+    <!-- 예약 상세 조회 -->
+    <select id="getReservationDetail" parameterType="int" resultType="org.hati.reservation.vo.ReservationListVO">
+        SELECT 
+            rr.reservation_id       AS reservationId,
+            rr.user_account_id      AS userAccountId,
+            rr.trainer_account_id   AS trainerAccountId,
+            rr.status,
+            rr.pay_type             AS payType,
+            rr.counts,
+            rr.base_fee_snapshot    AS baseFeeSnapshot,
+            rr.price_snapshot       AS priceSnapshot,
+            rr.total_price_snapshot AS totalPriceSnapshot,
+            rr.created_at           AS createdAt,
+            
+            rb.slot_date                AS slotDate,
+            rb.reservation_start_time   AS reservationStartTime,
+            rb.reservation_end_time     AS reservationEndTime,
+            rb.room_id                  AS roomId,
+            rb.user_nickname            AS userNickname,
+            rb.user_handle              AS userHandle,
+            rb.user_hati_code           AS userHatiCode,
+            rb.trainer_nickname         AS trainerNickname,
+            rb.trainer_handle           AS trainerHandle,
+            rb.trainer_hati_code        AS trainerHatiCode,
+            
+            vr.center_id    AS centerId,
+            vr.center_name  AS centerName,
+            vr.category,
+            
+            CASE WHEN cr.center_id IS NOT NULL THEN 1 ELSE 0 END AS hasReview
+            
+        FROM room_reservation rr
+        JOIN vw_reservation_base rb
+            ON rr.reservation_id = rb.reservation_id
+        JOIN vw_rooms vr
+            ON rb.room_id = vr.room_id
+        LEFT JOIN centers_reviews cr
+            ON vr.center_id = cr.center_id
+            AND rr.user_account_id = cr.account_id
+        
+        WHERE rr.reservation_id = #{reservationId}
+    </select>
+    
+    <!-- 리뷰 작성 여부 확인 -->
+    <select id="checkReview" resultType="int">
+        SELECT COUNT(*)
+        FROM centers_reviews
+        WHERE center_id  = #{centerId}
+          AND account_id = #{accountId}
+    </select>
+
+    <!-- 
+        리뷰 작성 자격 확인: 해당 센터에 COMPLETED 예약이 있는지 확인
+        room_reservation → rooms → centers 경로로 center_id 추적
+    -->
+    <select id="hasCompletedReservation" resultType="int">
+        SELECT COUNT(*)
+        FROM room_reservation rr
+        JOIN vw_reservation_time_range tr ON rr.reservation_id = tr.reservation_id
+        JOIN vw_rooms vr                  ON tr.room_id        = vr.room_id
+        WHERE rr.user_account_id = #{accountId}
+          AND vr.center_id       = #{centerId}
+          AND rr.status          = 'COMPLETED'
+    </select>
+    
+    <!-- 예약 취소 -->
+    <update id="cancelReservation" parameterType="int">
+        UPDATE room_reservation
+        SET status = 'CANCELLED'
+        WHERE reservation_id = #{reservationId}
+          AND status IN ('RESERVED', 'PENDING')
+    </update>
+    
+    <!-- 오늘 예약 조회 (위젯용) -->
+	<select id="getTodayReservation" parameterType="int" resultType="org.hati.reservation.vo.ReservationListVO">
+	    SELECT 
+	        rr.reservation_id       AS reservationId,
+	        vr.center_name          AS centerName,
+	        c.center_region                AS centerRegion,
+	        rb.slot_date            AS slotDate,
+	        rb.reservation_start_time AS reservationStartTime,
+	        rb.reservation_end_time   AS reservationEndTime
+	    FROM room_reservation rr
+	    JOIN vw_reservation_base rb
+	        ON rr.reservation_id = rb.reservation_id
+	    JOIN vw_rooms vr
+	        ON rb.room_id = vr.room_id
+	    JOIN centers c
+	        ON vr.center_id = c.center_id
+	    WHERE rr.user_account_id = #{accountId}
+	      AND TRUNC(rb.slot_date) = TRUNC(SYSDATE)
+	      AND rr.status = 'RESERVED'
+	      AND ROWNUM = 1
+	    ORDER BY rb.reservation_start_time ASC
+	</select>
+    
+    
+    
+
+</mapper>

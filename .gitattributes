@@ -1,0 +1,11 @@
+# 모든 텍스트 파일 자동 처리
+* text=auto
+
+# Java는 LF 유지
+*.java text eol=lf
+
+# XML도 LF 유지
+*.xml text eol=lf
+
+# properties
+*.properties text eol=lf

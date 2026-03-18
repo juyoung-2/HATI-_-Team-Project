@@ -1,0 +1,873 @@
+/* ===========================================
+   Reset & Common
+=========================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background-color: #f8f9fa;
+    color: #222;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+/* ===========================================
+   공통 헤더 (hatibMain 스타일 / 검색 제거)
+=========================================== */
+.header {
+    background: #fff;
+    border-bottom: 1px solid #e5e7eb;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    height: 64px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.logo-image {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+}
+/*
+.logo-text {
+    font-size: 18px;
+    font-weight: 700;
+    color: #2563eb;
+}*/
+
+.logo-text {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1877F2
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* 프로필 */
+.profile-wrapper { position: relative; }
+
+.profile-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    cursor: pointer;
+    border: 2px solid #e5e7eb;
+    transition: border-color 0.2s;
+    display: block;
+    flex-shrink: 0;
+}
+
+.profile-avatar:hover,
+.profile-wrapper.active .profile-avatar { border-color: #2563eb; }
+
+.profile-avatar-initial {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid #e5e7eb;
+    cursor: pointer;
+    background: #6366f1;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    user-select: none;
+    flex-shrink: 0;
+    transition: border-color 0.2s;
+}
+
+.profile-avatar-initial:hover,
+.profile-wrapper.active .profile-avatar-initial { border-color: #2563eb; }
+
+.login-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px;
+    background: #2563eb;
+    color: #fff;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+.login-btn:hover { background: #1d4ed8; }
+
+.profile-menu {
+    position: absolute;
+    top: 46px;
+    right: 0;
+    width: 160px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+    display: none;
+    overflow: hidden;
+    z-index: 200;
+}
+.profile-wrapper.active .profile-menu { display: block; }
+
+.profile-menu-header {
+    padding: 12px 14px 10px;
+    border-bottom: 1px solid #f3f4f6;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.profile-menu-name { font-size: 14px; font-weight: 700; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.profile-menu-role { font-size: 11px; color: #9ca3af; }
+.profile-menu a { display: block; padding: 10px 14px; font-size: 14px; color: #333; text-decoration: none; transition: background 0.15s; }
+.profile-menu a:hover { background: #f1f5f9; }
+.profile-menu-logout { border-top: 1px solid #f3f4f6; color: #ef4444 !important; }
+.profile-menu-logout:hover { background: #fef2f2 !important; }
+
+/* ===========================================
+   Page Title Bar
+=========================================== */
+.page-title-bar {
+    background: #fff;
+    padding: 16px 0 0;
+}
+
+.page-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.page-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+}
+
+/* ===========================================
+   Tabs
+=========================================== */
+.tabs-container {
+    background: #fff;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.tabs {
+    display: flex;
+    gap: 32px;
+    overflow-x: auto;
+}
+
+.tab {
+    padding: 12px 0;
+    border-bottom: 2px solid transparent;
+    font-size: 15px;
+    color: #6b7280;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.tab:hover {
+    color: #2563eb;
+}
+
+.tab.active {
+    color: #2563eb;
+    font-weight: 600;
+    border-bottom-color: #2563eb;
+}
+
+.tab-count {
+    font-size: 14px;
+}
+
+/* ===========================================
+   Main Container
+=========================================== */
+.main-container {
+    padding: 32px 0;
+}
+
+.reservation-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* ===========================================
+   Empty State
+=========================================== */
+.empty-state {
+    background: #fff;
+    border-radius: 12px;
+    padding: 80px 40px;
+    text-align: center;
+}
+
+.empty-state i {
+    font-size: 64px;
+    color: #9ca3af;
+    margin-bottom: 16px;
+}
+
+.empty-state p {
+    color: #6b7280;
+    font-size: 16px;
+}
+
+/* ===========================================
+   Reservation Card
+=========================================== */
+.reservation-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+}
+
+.reservation-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.card-content {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+}
+
+.reservation-image {
+    flex-shrink: 0;
+    width: 160px;
+    height: 160px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #e5e7eb;
+}
+
+.reservation-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.reservation-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Info Header */
+.info-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.category-title {
+    flex: 1;
+}
+
+.category-badge {
+    display: inline-block;
+    background: #dbeafe;
+    color: #2563eb;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.center-name {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 0;
+}
+
+
+.status-badge {
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+/* ===========================================
+   Status Colors (공통)
+=========================================== */
+
+.status-RESERVED {
+    background: #dbeafe;
+    color: #2563eb;
+}
+
+.status-COMPLETED {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.status-CANCELLED {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.status-PENDING {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.status-NO_SHOW {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+
+/* Info Details */
+.info-details {
+    margin-bottom: 16px;
+}
+
+.detail-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 8px;
+}
+
+.detail-row i {
+    width: 16px;
+    color: #9ca3af;
+}
+
+/* Participants Dropdown */
+.participants-row {
+    position: relative;
+}
+
+.participants-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.participants-toggle {
+    background: none;
+    border: none;
+    color: #6b7280;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0;
+    transition: color 0.2s;
+}
+
+.participants-toggle:hover {
+    color: #2563eb;
+}
+
+.participants-toggle i {
+    font-size: 12px;
+    transition: transform 0.2s;
+}
+
+.participants-toggle.active i {
+    transform: rotate(180deg);
+}
+
+.participants-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 8px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 8px;
+    min-width: 220px;
+    display: none;
+    z-index: 10;
+}
+
+.participants-list.show {
+    display: block;
+}
+
+.participant-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: #374151;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.participant-item:hover {
+    background: #f3f4f6;
+}
+
+.participant-item i {
+    width: 16px;
+    color: #6b7280;
+}
+
+/* Info Footer */
+.info-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+    margin-top: auto;
+}
+
+.price-section {
+    display: flex;
+    flex-direction: column;
+}
+
+.price-label {
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+
+.price-value {
+    font-size: 20px;
+    font-weight: bold;
+    color: #2563eb;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+/* ===========================================
+   Buttons
+=========================================== */
+.btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-primary {
+    background: #2563eb;
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: #1d4ed8;
+}
+
+.btn-outline {
+    background: #fff;
+    border: 1px solid #d1d5db;
+    color: #374151;
+}
+
+.btn-outline:hover {
+    background: #f9fafb;
+}
+
+.btn-danger {
+    background: #dc2626;
+    color: #fff;
+}
+
+.btn-danger:hover {
+    background: #b91c1c;
+}
+
+.btn-disabled {
+    background: #e5e7eb;
+    color: #9ca3af;
+    cursor: not-allowed;
+}
+
+.btn-full {
+    flex: 1;
+}
+
+/* ===========================================
+   Modal
+=========================================== */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.show {
+    display: flex;
+}
+
+.modal-content {
+    background: #fff;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-small {
+    max-width: 480px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header h2 {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.modal-close:hover {
+    background: #f3f4f6;
+}
+
+.modal-close i {
+    font-size: 20px;
+    color: #6b7280;
+}
+
+.modal-body {
+    padding: 24px;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+/* Cancel Modal */
+.cancel-notice {
+    text-align: center;
+    padding: 20px;
+}
+
+.cancel-notice i {
+    font-size: 48px;
+    color: #f59e0b;
+    margin-bottom: 12px;
+}
+
+.cancel-notice p {
+    font-size: 16px;
+    color: #374151;
+}
+
+.refund-policy {
+    background: #f3f4f6;
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 16px;
+}
+
+.refund-policy h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.refund-policy ul {
+    list-style: none;
+    padding: 0;
+}
+
+.refund-policy li {
+    font-size: 13px;
+    color: #6b7280;
+    padding: 4px 0;
+    padding-left: 20px;
+    position: relative;
+}
+
+.refund-policy li:before {
+    content: "•";
+    position: absolute;
+    left: 8px;
+}
+
+/* ===========================================
+   Responsive
+=========================================== */
+@media (max-width: 768px) {
+    .card-content {
+        flex-direction: column;
+    }
+    
+    .reservation-image {
+        width: 100%;
+        height: 200px;
+    }
+    
+    .info-footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+    
+    .action-buttons {
+        width: 100%;
+    }
+    
+    .action-buttons .btn {
+        flex: 1;
+    }
+}
+
+/* =============================================
+   예약 상세 모달 - Detail Modal
+============================================= */
+
+/* 시설 정보 헤더 (이미지 + 텍스트) */
+.detail-hero {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    margin-bottom: 4px;
+}
+
+.detail-hero-img {
+    width: 100px;
+    height: 100px;
+    border-radius: 12px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.detail-hero-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.detail-hero-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 2px;
+}
+
+.detail-category-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    background: #eff6ff;
+    color: #2563eb;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 20px;
+    width: fit-content;
+}
+
+.detail-center-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.4;
+    margin: 0;
+}
+
+.detail-status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    width: fit-content;
+}
+
+
+/* 구분선 */
+.detail-divider {
+    height: 1px;
+    background: #f0f0f5;
+    margin: 20px 0;
+}
+
+/* 예약 정보 행 */
+.detail-info-section {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.detail-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.detail-info-label {
+    font-size: 14px;
+    color: #6b7280;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.detail-info-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+    text-align: right;
+}
+
+.detail-info-value.mono {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    letter-spacing: 0.03em;
+}
+
+/* 결제 정보 */
+.detail-pay-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.detail-pay-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 4px 0;
+}
+
+.detail-pay-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.detail-pay-label {
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.detail-pay-value {
+    font-size: 13px;
+    color: #374151;
+    font-weight: 500;
+}
+
+.detail-pay-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 12px;
+    border-top: 1px solid #e5e7eb;
+    margin-top: 4px;
+}
+
+.detail-pay-total-label {
+    font-size: 15px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.detail-pay-total-value {
+    font-size: 18px;
+    font-weight: 800;
+    color: #2563eb;
+}
+
+/* 액션 버튼 영역 */
+.detail-action-area {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-primary {
+    background: #3a3af4;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 13px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.btn-primary:hover {
+    background: #2d2dcc;
+}

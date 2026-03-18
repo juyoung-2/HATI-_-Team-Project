@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.hati.profile.mapper.TrainerReviewMapper">
+	<!-- 유저의 프로필 페이지에서 리뷰 리스트 조회 -->
+	<select id="getTrainerReviewByUser" resultType="org.hati.profile.vo.TrainerReviewDTO">
+		SELECT
+			r.content AS reviewContent,
+			r.user_account_id AS userAccountId,
+			v.trainer_account_id AS trainerAccountId,
+			v.trainer_nickname AS trainerNickname,
+			v.trainer_handle AS trainerHandle,
+			v.trainer_profile_image_url AS trainerProfileUrl,
+			v.trainer_hati_code AS trainerHatiCode,
+			t.training_count AS trainingCount,
+			COALESCE(r.updated_at, r.created_at) AS reviewDate,
+
+			CASE 
+				WHEN r.updated_at IS NOT NULL THEN 1
+				ELSE 0
+			END AS updateReview
+			
+		FROM trainers_reviews r
+
+		JOIN (
+			SELECT
+				user_account_id,
+				trainer_account_id,
+				SUM(total_count_snapshot - remaining_count) AS training_count
+			FROM vw_user_pass
+			GROUP BY user_account_id, trainer_account_id
+		) t
+			ON r.user_account_id = t.user_account_id
+			AND r.trainer_account_id = t.trainer_account_id
+
+		JOIN (
+			SELECT DISTINCT
+				user_account_id,
+				trainer_account_id,
+				trainer_nickname,
+				trainer_handle,
+				trainer_profile_image_url,
+				trainer_hati_code
+			FROM vw_user_pass
+		) v
+			ON r.user_account_id = v.user_account_id
+			AND r.trainer_account_id = v.trainer_account_id
+
+		WHERE r.user_account_id = #{accountId}
+		ORDER BY COALESCE(r.updated_at, r.created_at) DESC
+	</select>
+	
+	<!-- 트레이너의 프로필 페이지에서 리뷰 리스트 조회 -->
+	<select id="getTrainerReviewByTrainer" resultType="org.hati.profile.vo.TrainerReviewDTO">
+		SELECT
+			r.content AS reviewContent,
+			r.trainer_account_id AS trainerAccountId,
+			v.user_account_id AS userAccountId,
+			v.user_nickname AS userNickname,
+			v.user_handle AS userHandle,
+			v.user_profile_image_url AS userProfileUrl,
+			v.user_hati_code AS userHatiCode,
+			t.training_count AS trainingCount,
+			COALESCE(r.updated_at, r.created_at) AS reviewDate,
+
+			CASE 
+				WHEN r.updated_at IS NOT NULL THEN 1
+				ELSE 0
+			END AS updateReview
+			
+		FROM trainers_reviews r
+
+		JOIN (
+			SELECT
+				user_account_id,
+				trainer_account_id,
+				SUM(total_count_snapshot - remaining_count) AS training_count
+			FROM vw_user_pass
+			GROUP BY user_account_id, trainer_account_id
+		) t
+			ON r.user_account_id = t.user_account_id
+			AND r.trainer_account_id = t.trainer_account_id
+
+		JOIN (
+			SELECT DISTINCT
+				trainer_account_id,
+				user_account_id,
+				user_nickname,
+				user_handle,
+				user_profile_image_url,
+				user_hati_code
+			FROM vw_user_pass
+		) v
+			ON r.user_account_id = v.user_account_id
+			AND r.trainer_account_id = v.trainer_account_id
+
+		WHERE r.trainer_account_id = #{accountId}
+		ORDER BY COALESCE(r.updated_at, r.created_at) DESC
+	</select>
+	
+	<!-- 트레이너의 프로필 페이지에서 로그인 한 유저가 해당 트레이너에게 트레이닝 받았던 기록이 있나 조회 및 리뷰를 남긴 이력이 없나 조회 -->
+	<select id="canReview" resultType="int">
+    	SELECT
+	    	CASE
+	        	WHEN EXISTS (
+	            	SELECT 1
+	            	FROM vw_user_pass v
+	            	WHERE v.user_account_id = #{userAccountId}
+	              	AND v.trainer_account_id = #{trainerAccountId}
+	        	)
+	        	AND NOT EXISTS (
+	            	SELECT 1
+	            	FROM trainers_reviews r
+	            	WHERE r.user_account_id = #{userAccountId}
+	              	AND r.trainer_account_id = #{trainerAccountId}
+	        	)
+	        	THEN 1
+	        	ELSE 0
+	    	END AS canReview
+		FROM dual
+	</select>
+		
+	<!-- 리뷰 작성 -->
+	<insert id="insertTrainerReview">
+		INSERT INTO trainers_reviews (user_account_id, trainer_account_id, content)
+		VALUES (#{userAccountId}, #{trainerAccountId}, #{content})
+	</insert>
+	
+	<!-- 리뷰 수정 -->
+	<update id="updateTrainerReview">
+		UPDATE trainers_reviews SET content=#{content} 
+		WHERE user_account_id=#{userAccountId} AND trainer_account_id=#{trainerAccountId}
+	</update>
+	
+	<!-- 리뷰 삭제 -->
+	<delete id="deleteTrainerReview">
+		DELETE FROM trainers_reviews WHERE user_account_id=#{userAccountId} AND trainer_account_id=#{trainerAccountId}
+	</delete>
+</mapper>

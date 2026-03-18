@@ -1,0 +1,1045 @@
+/* =========================================================
+   home.css (merged: A+B)
+   - 좌 | 중 | 우 3컬럼 고정
+   - auth-login.css / signup.css 영향 완전 차단
+   - feed / side-nav / right-widgets 전용
+   - ✅ 스크롤: B안 (main-center 직접 스크롤)
+   ========================================================= */
+
+/* =========================================================
+   [담당: 공통/베이스] RESET & GLOBAL STABILIZE
+   ========================================================= */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  display: block;              /* 🔥 auth CSS flex 영향 차단 */
+  background: #F0F2F5;
+}
+
+/* (선택) 전체 박스 사이징 안정화가 필요할 때만 켜기
+*,
+*::before,
+*::after { box-sizing: border-box; }
+*/
+
+/* =========================================================
+   [담당: 공통/베이스] COLOR SYSTEM
+   ========================================================= */
+:root{
+  --bg:#F0F2F5;
+  --text:#050505;
+  --sub:#606770;
+  --border:#E4E6EB;
+  --primary:#1877F2;
+  --card:#FFFFFF;
+  --radius:8px;
+}
+
+/* =========================================================
+   [담당: 공통/컴포넌트] COMMON CARD
+   ========================================================= */
+.card{
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: 0 1px 2px rgba(0,0,0,.10);
+}
+
+/* =========================================================
+   [공통/컴포넌트] HATI BADGE (Color Inject 방식)
+   - HATI별 색은 .hati-badge--XXXX 에서 --hati만 세팅
+   - 즉, 앞으로는 아래 "팔레트 구간"에 줄 추가만 하면 끝
+   ========================================================= */
+
+/* 기본 배지 */
+.hati-badge{
+  --hati: var(--primary);                 /* 기본값(안 붙였을 때) */
+  display:inline-flex;
+  align-items:center;
+  height:22px;
+  padding:0 10px;
+  border-radius:999px;
+
+  font-size:12px;
+  font-weight:700;
+  line-height:1;
+
+  color: var(--hati);
+  background: rgba(255,255,255,.92);      /* ✅ 배경은 여기만 바꾸면 됨 */
+  border: 2px solid rgba(0,0,0,.0);       /* 기본값(안전) */
+  border-color: color-mix(in srgb, var(--hati) 35%, transparent);
+  white-space: nowrap;
+}
+
+/* post-card 작은 버전 */
+.hati-badge--sm{
+  height:18px;
+  padding:0 8px;
+  font-size:11px;
+}
+
+/* (옵션) hover만 살짝 하늘색(원하면 켜기)
+.hati-badge:hover{
+  background: color-mix(in srgb, var(--hati) 10%, #fff);
+}
+*/
+
+/* =========================================================
+   [팔레트] HATI별 컬러 세팅
+   - 앞으로는 아래에 줄 "추가만" 하면 됨 ✅
+   ========================================================= */
+/* HATI badge palette (ver.1 from character images) */
+.hati-badge--ICFL{ --hati:#D8BCEA; }
+.hati-badge--ICFH{ --hati:#FCD4BC; }
+.hati-badge--ICRL{ --hati:#B8E4D0; }
+.hati-badge--ICRH{ --hati:#EC6848; }
+
+.hati-badge--IPFL{ --hati:#FCC4A4; }
+.hati-badge--IPFH{ --hati:#D0809C; }
+.hati-badge--IPRL{ --hati:#D0B49C; }
+.hati-badge--IPRH{ --hati:#C8ACA4; }
+
+.hati-badge--OCFL{ --hati:#E8CA78; }
+.hati-badge--OCFH{ --hati:#E8BC64; }
+.hati-badge--OCRL{ --hati:#94D4F0; }
+.hati-badge--OCRH{ --hati:#1C4C7C; }
+
+.hati-badge--OPFL{ --hati:#F8DCBC; }
+.hati-badge--OPFH{ --hati:#04487C; }
+.hati-badge--OPRL{ --hati:#CCD0A0; }
+.hati-badge--OPRH{ --hati:#2C5858; }
+
+/* =========================================================
+   [담당: 레이아웃] MAIN 3-COLUMN LAYOUT
+   ========================================================= */
+.main-layout{
+  display: flex;
+  height: 100%;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+/* 왼쪽 */
+.main-left{
+  width: 280px;
+  flex: 0 0 280px;
+  background: var(--card);
+  border-right: 1px solid var(--border);
+}
+
+/* 중앙 */
+.main-center{
+  flex: 1 1 auto;
+  min-width: 0;               /* 🔥 중요: flex overflow 방지 */
+  overflow-y: auto;
+
+  /* 스크롤바 숨김 */
+  scrollbar-width: none;          /* Firefox */
+  -ms-overflow-style: none;       /* IE / Edge 구형 */
+}
+
+.main-center::-webkit-scrollbar{
+  display: none;                  /* Chrome / Safari / Edge */
+}
+
+/* 오른쪽 */
+.main-right{
+  width: 360px;               /* ✅ 요청대로 유지 */
+  flex: 0 0 360px;
+  background: var(--bg);
+  border-left: 1px solid var(--border);
+}
+
+/* =========================================================
+   [담당: 좌측/SideNav] LEFT : SIDE NAV
+   ========================================================= */
+.side-nav{
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- 브랜드 ---------- */
+.side-brand{
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.side-brand:focus{
+  outline: 2px solid rgba(24,119,242,.35);
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+
+.side-logo{
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.side-title{
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+/* ---------- 메뉴 ---------- */
+.side-menu{
+  flex: 1;
+  padding: 0 8px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;        /* 추가 */
+  scrollbar-width: none;   /* 추가 - Firefox */
+}
+
+.side-menu::-webkit-scrollbar {
+  display: none;           /* 추가 - Chrome/Safari */
+}
+
+.side-item{
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 8px;
+  margin-bottom: 4px;
+  text-decoration: none;
+  color: var(--text);
+}
+
+.side-item:hover{ background:#F3F4F6; }
+
+.side-item.is-active{
+  background:#E7F3FF;
+  color: var(--primary);
+}
+
+.side-ico{
+  width: 26px;
+  font-size: 18px;
+  display: inline-flex;
+  justify-content: center;
+}
+
+/* ---------- 글쓰기 버튼 ---------- */
+.side-post-btn{
+  margin: 16px;
+  height: 48px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* =========================================================
+   [담당: 북마크/List] Bookmark empty state (bookmark/list)
+   - ✅ 북마크 빈 상태: 어디서든 적용되게
+   ========================================================= */
+.bookmark-empty{
+  padding: 16px;
+  text-align: center;
+}
+
+.bookmark-empty__title{
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+
+.bookmark-empty__desc{
+  font-size: 13px;
+  color: var(--sub);
+}
+
+/* =========================================================
+   [담당: 좌측/SideNav] 하단 유저 영역
+   - 배지(위) + 닉/핸들(한 줄)
+   ========================================================= */
+.side-me{
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: relative;
+}
+
+.side-me::before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:16px;
+  right:16px;
+  height:1px;
+  background:var(--border);
+}
+
+.me-avatar{
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.me-avatar-img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ✅ 배지 줄 + me-line 줄 */
+.side-me .me-meta{
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+/* 닉네임 + 핸들 한 줄 */
+.side-me .me-line{
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 말줄임 안정화 */
+.side-me .me-name{
+  flex: 0 0 auto;      /* ✅ 핵심 */
+  max-width: 60%;
+  min-width: 0;
+}
+
+.side-me .me-handle{
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: none;
+}
+
+/* 기존 텍스트 스타일 유지 */
+.side-me .me-name{
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.side-me .me-handle{
+  font-size: 13px;
+  font-weight: 400;
+  color: #6B7280;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ... 버튼 */
+.me-more{
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 20px;
+  padding: 8px;
+}
+
+/* ---------- 팝오버 ---------- */
+.me-pop{
+  position: absolute;
+  right: 16px;
+  bottom: 64px;
+  min-width: 180px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.1);
+  padding: 6px;
+  z-index: 1000;
+}
+
+.me-pop__item{
+  display:block;
+  box-sizing:border-box;      /* ✅ padding 포함해서 100% */
+  width:100%;
+  padding:10px 12px;
+  border-radius:10px;
+  border:0;
+  background:transparent;
+  cursor:pointer;
+  font-size:14px;
+  color:var(--text, #050505);
+  text-align:center;
+  text-decoration:none;       /* ✅ a 밑줄 제거 */
+}
+
+.me-pop__item:hover{ background:#F3F4F6; }
+.me-pop__danger{ color:#d93025; }
+.me-pop__form{ margin:0; }
+
+/* =========================================================
+   [담당: 중앙/Feed] CENTER : FEED (스크롤 + 컨테이너)
+   ========================================================= */
+.feed-scroll{
+  min-height: 100%;
+  overflow: visible;
+  padding: 24px 0;            /* 위아래 여백만 */
+}
+
+.feed-container{
+  max-width: 980px;           /* ✅ 672px → 980px 확장 */
+  margin: 0 auto;
+  padding: 0 24px;            /* ✅ 좌우 패딩 */
+}
+
+.feed-list{
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.feed-empty{
+  padding: 16px;
+  text-align: center;
+  color: var(--sub);
+}
+
+/* =========================================================
+   [담당: 중앙/FeedTop] FEED TOP (검색/문구 카드)
+   ========================================================= */
+.feed-top{
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
+.feed-top__row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.feed-search{
+  position: relative;
+  flex:1;
+  height: 44px;
+  border-radius: 999px;
+  background: #F0F2F5;
+  display:flex;
+  align-items:center;
+  padding: 0 14px;
+}
+
+.feed-search__ico{
+  margin-right: 10px;
+  color: var(--sub);
+  font-size: 16px;
+}
+
+.feed-search__input{
+  width:100%;
+  border:0;
+  outline:0;
+  background: transparent;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.feed-filter-btn{
+  flex: 0 0 44px;
+  width:44px;
+  height:44px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background:#fff;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color: var(--sub);
+}
+
+.feed-filter-btn:hover{ background:#F3F4F6; }
+
+.feed-top__desc{
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: var(--sub);
+}
+
+.compose-box{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s;
+  border: 0;
+  width: 100%;
+  text-align: left;
+  background: #fff;
+}
+
+.compose-box:hover{
+  background: #F9F9F9;
+}
+
+.compose-box__avatar{
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.compose-box__avatar-img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.compose-box__avatar-fallback{
+  width: 100%;
+  height: 100%;
+  background: var(--primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.compose-box__placeholder{
+  flex: 1;
+  height: 40px;
+  line-height: 40px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: #F0F2F5;
+  font-size: 15px;
+  color: var(--sub);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* =========================================================
+   [담당: 중앙/PostCard] POST CARD (크기 체감 업)
+   - 레이아웃 해결 후 카드도 살짝 키워 보이게
+   - (post-card.css가 따로 있으면, 여기 정의는 "최종 적용 우선순위" 확인 필요)
+   ========================================================= */
+.post-card{
+  border-radius: 12px;
+  padding: 18px 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.10);
+}
+
+/* =========================================================
+   [담당: 우측/Widgets] RIGHT : WIDGETS
+   ========================================================= */
+.right-inner{
+  height: 100%;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+
+  /* 스크롤바 숨김 */
+  scrollbar-width: none;          /* Firefox */
+  -ms-overflow-style: none;       /* IE / Edge 구형 */
+}
+
+.right-inner::-webkit-scrollbar{
+  display: none;                  /* Chrome / Safari / Edge */
+}
+
+/* ---------- 위젯 공통 ---------- */
+.widget {
+  padding: 16px;
+}
+
+.widget-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.widget-head--between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.widget-head-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.widget-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1C1E21;
+  margin: 0;
+}
+
+.widget-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: #1877F2;
+  background: #E7F3FF;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.widget-loading {
+  font-size: 13px;
+  color: #606770;
+  text-align: center;
+  padding: 12px 0;
+}
+
+/* ---------- 날씨 위젯 ---------- */
+.weather-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.weather-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #FFF3CD;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 24px;
+}
+
+.weather-info-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1C1E21;
+  margin-bottom: 4px;
+}
+
+.weather-info-desc {
+  font-size: 12px;
+  color: #606770;
+}
+
+.weather-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.weather-tag {
+  font-size: 12px;
+  font-weight: 500;
+  color: #1877F2;
+  background: #E7F3FF;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.weather-footer {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid #E4E6EB;
+  font-size: 12px;
+  color: #606770;
+}
+
+/* ---------- 예약 위젯 ---------- */
+.schedule-card {
+  background: #E8F5E9;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+
+.schedule-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1C1E21;
+  margin-bottom: 8px;
+}
+
+.schedule-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+  font-size: 12px;
+  color: #606770;
+}
+
+.schedule-row svg { flex-shrink: 0; }
+
+.schedule-btn {
+  width: 100%;
+  padding: 8px;
+  border: none;
+  border-radius: 6px;
+  background: #E7F3FF;
+  color: #1877F2;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.schedule-btn:hover { opacity: 0.8; }
+
+.schedule-empty {
+  text-align: center;
+  padding: 16px 0;
+}
+
+.schedule-empty-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #F0F2F5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 8px;
+}
+
+.schedule-empty-text {
+  font-size: 13px;
+  color: #606770;
+  margin-bottom: 8px;
+}
+
+.schedule-empty-link {
+  font-size: 12px;
+  color: #1877F2;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.schedule-empty-link:hover { text-decoration: underline; }
+
+/* ---------- 팔로워 위젯 ---------- */
+.follower-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.follower-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.follower-item:hover { background: #F3F4F6; }
+
+.follower-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #E4E6EB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #606770;
+  overflow: hidden;
+}
+
+.follower-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.follower-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.follower-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1C1E21;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.follower-handle {
+  font-size: 12px;
+  color: #606770;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.follower-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.widget-follow-btn {
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  background-color: #1877F2;
+  color: #ffffff;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: opacity 0.15s;
+}
+
+.widget-follow-btn:hover { opacity: 0.85; }
+
+/* ---------- 푸터 ---------- */
+.widget-footer {
+  padding: 12px 4px 32px;
+  border-top: 1px solid #E4E6EB;
+}
+
+.widget-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin-bottom: 6px;
+}
+
+.widget-footer-links a {
+  font-size: 11px;
+  color: #606770;
+  text-decoration: none;
+}
+
+.widget-footer-links a:hover { text-decoration: underline; }
+
+.widget-footer-copy {
+  font-size: 11px;
+  color: #606770;
+  margin: 0;
+}
+
+/* =========================================================
+   [담당: Explore] EXPLORE MODAL (B안 채택)
+   ========================================================= */
+
+/* 백드롭 */
+.explore-modal-backdrop{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  z-index: 1000;
+  display: none;
+}
+
+/* 모달 */
+.explore-modal{
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 480px;
+  max-width: calc(100vw - 32px);
+  max-height: 80vh;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.18);
+  display: none;
+  flex-direction: column;
+  z-index: 1001;
+}
+
+/* 헤더 */
+.explore-modal__header{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.explore-modal__title{
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.explore-modal__close{
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  color: var(--sub);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 6px;
+}
+
+.explore-modal__close:hover{ background: #F3F4F6; }
+
+/* 바디 */
+.explore-modal__body{
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* 섹션 */
+.explore-modal__section-title{
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 12px;
+}
+
+/* 라디오 */
+.explore-modal__radio{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.explore-modal__radio:hover{ background: #F3F4F6; }
+
+.explore-modal__radio input{ accent-color: var(--primary); }
+
+/* exclusive 모드 비활성화 표시 */
+.explore-modal__radio--exclusive.is-disabled{
+  opacity: .4;
+  pointer-events: none;
+}
+
+/* 준비중 배지 */
+.explore-modal__badge{
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--sub);
+  background: #F0F2F5;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-left: 4px;
+}
+
+/* HATI 그리드 */
+.explore-modal__hati-grid{
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px;
+}
+
+.explore-modal__hati-item{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.explore-modal__hati-item:hover{ background: #F3F4F6; }
+.explore-modal__hati-item input{ accent-color: var(--primary); }
+
+/* 비활성화 (exclusive 모드일 때) */
+.explore-modal__hati-grid.is-disabled,
+#sortSection.is-disabled{
+  opacity: .4;
+  pointer-events: none;
+}
+
+/* 푸터 */
+.explore-modal__footer{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+}
+
+.explore-modal__reset{
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--sub);
+  padding: 10px 16px;
+  border-radius: 8px;
+}
+
+.explore-modal__reset:hover{ background: #F3F4F6; }
+
+.explore-modal__apply{
+  border: 0;
+  background: var(--primary);
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 32px;
+  border-radius: 8px;
+}
+
+.explore-modal__apply:hover{ opacity: .88; }
+
+/* =========================================================
+   [담당: 반응형] RESPONSIVE
+   ========================================================= */
+@media (max-width: 1200px){
+  .main-right{ display: none; }
+}

@@ -1,0 +1,175 @@
+# ===========================
+# Java & Spring Legacy Project
+# ===========================
+
+# 이후 추가한 내용들
+src/main/resources/aws.properties
+.tomcat/
+root-context.xml
+servlet-context.xml
+web.xml
+
+
+# Compiled class files
+*.class
+*.jar
+*.war
+*.ear
+
+# Log files
+*.log
+logs/
+
+# Maven
+target/
+pom.xml
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# ===========================
+# Eclipse (Spring Tool Suite)
+# ===========================
+.metadata/
+.recommenders/
+.settings/
+.classpath
+.project
+.springBeans
+.sts4-cache/
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+
+# ===========================
+# IntelliJ IDEA
+# ===========================
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+.idea_modules/
+
+# ===========================
+# VS Code
+# ===========================
+.vscode/
+*.code-workspace
+
+# ===========================
+# Tomcat / Server
+# ===========================
+Servers/
+.tomcat/
+work/
+
+# ===========================
+# Database
+# ===========================
+*.db
+*.sqlite
+*.sqlite3
+
+# ===========================
+# OS Files
+# ===========================
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Linux
+*~
+
+# ===========================
+# 🔒 민감 정보 (프로젝트 특화)
+# ===========================
+
+# ⚠️ DB 비밀번호 포함 - 절대 커밋 금지!
+# src/main/webapp/WEB-INF/spring/root-context.xml
+
+# 대신 템플릿 파일 사용:
+# root-context.xml → gitignore
+# root-context.xml.example → 커밋 (비밀번호 제거)
+
+# 또는 별도 properties 파일 분리
+database.properties
+
+# ===========================
+# Application Specific
+# ===========================
+
+# 업로드된 파일 (사용자 업로드 이미지 등)
+src/main/webapp/uploads/
+src/main/webapp/resources/uploads/
+uploads/
+upload/
+
+# 채팅 첨부 파일
+src/main/webapp/chat-files/
+
+# 임시 파일
+temp/
+tmp/
+
+# ===========================
+# Build & Distribution
+# ===========================
+dist/
+build/
+*.zip
+*.tar.gz
+
+# ===========================
+# IDE-specific files
+# ===========================
+# Spring Tool Suite
+.apt_generated/
+.factorypath
+.externalToolBuilders/
+
+# NetBeans
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# ===========================
+# 기타
+# ===========================
+# Node modules (프론트엔드 빌드 도구 사용 시)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+
+# Backup files
+*.bak
+*.backup
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# 테스트 업로드 파일
+test-uploads/

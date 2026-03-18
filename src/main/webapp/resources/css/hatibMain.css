@@ -1,0 +1,822 @@
+
+/*모든 요소의 기본 여백 제거*/
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/*os기본 ui폰트 사용, 연한 회색 배경 
+-apple-system : macOS / iOS 기본 시스템 폰트 (San Francisco)
+BlinkMacSystemFont : 크롬 부라우저에서 macOS용 폰트 보완
+"Segoe UI" : Windows 기본 UI 폰트
+sans-serif : 위 폰트가 전부 없을 경우 기본 고딕체
+사용자의 OS에 가장 잘 어울리는 네이티브 느낌의 폰트가 자동 적용됨
+*/
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background-color: #f8f9fa;
+    color: #222;
+}
+
+/* Header */
+/*헤더 배경 회색, 하단에 얇은 구분선*/
+.header {
+    background: #fff;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+/*가운데 정렬 컨테이너 좌/우 요소를 flax로 배치*/
+.header-inner {
+    max-width: 1200px; /*콘텐츠 최대 가로 폭 화면이 아무리 커도 1200px이상 안 늘어남*/
+    margin: 0 auto; /*좌우 자동 여백(가운데 정렬) width 또는 max-width가 있어야 중앙 정렬이 됨*/
+    padding: 16px; /*안쪽 여백, 헤더 내용이 가장자리랑 딱 붙지 않게 해줌*/
+    display: flex; /*내부 요소들이 가로 방향 배치 (로고, 검색, 프로필 아이콘)*/
+    justify-content: space-between; /*첫 요소는 왼쪽 끝, 마지막 요소는 오른쪽 끝*/
+    align-items: center; /*로고, 텍스트, 버튼 높이가 달라도 한 줄로 맞춰짐*/
+}
+/*로고 아이콘 + 텍스트 가로 배치
+로고 전체 래퍼 아이콘+텍스트를 묶는 컨테이너*/
+.logo {
+    display: flex; /*아이콘과 텍스트를 가로로 나란히 배치 */
+    align-items: center; /*텍스트 높이 달라도 중앙에 딱 맞음*/
+    gap: 8px; /*아이콘 ↔ 텍스트 사이 간격*/
+}
+/*로고 아이콘 역할(추후 이미지로 교체)*/
+.logo-image {
+    width: 40px;   /* 로고 크기 */
+    height: 40px;
+    object-fit: contain; /* 비율 유지 */
+}
+/*로고 컬러 통일 */
+/*
+.logo-text {
+    font-size: 20px;
+    font-weight: bold;
+    color: #2563eb;
+}*/
+.logo-text {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1877F2
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/*검색 창 아이콘을 input 위에 올리기 위한 기준점
+이 요소를 기준점으로 쓰겠다. 자식 요소가 position: absolute일 때 자식 요소의 위치 기준이 됨*/
+.search-wrapper {
+    position: relative;
+}
+
+/*검색 창 오른쪽 아이콘 여유 공간 확보*/
+.search-input {
+    width: 240px; /*검색창 고정 너비*/
+    padding: 8px 36px 8px 12px; /*36px -> 오른쪽에 검색 아이콘이 올라갈 공간을 미리 비워둠*/
+    border: 1px solid #d1d5db;
+    border-radius: 20px;
+    font-size: 14px;
+}
+/*포커스 시 브랜드 컬러 강조
+input이 클릭되었을 때*/
+.search-input:focus {
+    border-color: #2563eb;
+    outline: none;
+}
+/*검색 아이콘을 input내부 오른쪽에 고정*/
+.search-icon {
+    background: none;        /* button 기본 배경 제거 */
+    border: none;            /* button 기본 테두리 제거 */
+    position: absolute; /*부모(.search-wrapper) 기준으로 자유롭게 위치 고정*/
+    right: 12px;
+    top: 50%; /*부모 높이의 정중앙 지점*/
+    transform: translateY(-50%); /*자기 높이의 절반만큼 위로 당김*/
+    font-size: 16px;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 0;              /* button 기본 패딩 제거 */
+}
+
+/*마우스 올리면 브랜드 컬러로 변경*/
+.search-icon:hover {
+    color: #2563eb;
+}
+
+/* 검색 폼 */
+.search-form {
+    margin: 0;
+}
+
+/* 검색 결과 정보 영역 
+검색 시 연한 하늘색 배경으로 결과 영역 시각적 구분*/
+.search-result-info {
+    background: #f0f9ff;
+    border-bottom: 1px solid #bfdbfe;
+    padding: 12px 0;
+}
+
+/*가운데 정렬, 최대 폭 제한*/
+.search-result-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/*검색 키워드 텍스트 
+본문 보다 좀 더 진한 파랑*/
+.search-keyword {
+    font-size: 15px;
+    color: #1e40af;
+}
+
+/*검색어 자체만 더 강조*/
+.search-keyword strong {
+    color: #2563eb;
+    font-weight: 600;
+}
+
+/*검색 초기화 버튼 
+빨간색으로 취소, 초기화 기능임을 사용자가 직관적으로 인식
+text-decoration: none; -> a 태그 기본 밑줄 제거*/
+.clear-search {
+    color: #ef4444;
+    text-decoration: none;
+    font-size: 14px;
+    display: flex; /*아이콘 + 텍스트 세로 중앙 정렬*/
+    align-items: center; /*아이콘 + 텍스트 세로 중앙 정렬*/
+    gap: 4px; /*아이콘과 텍스트 사이 자연스러운 간격, margin보다 관리하기 쉬움 (flex 전용)*/ 
+    padding: 6px 12px;/*클릭 영역 확보, 텍스트만 누르는 게 아니라 주변도 클릭 가능*/
+    border-radius: 6px;
+    transition: background 0.2s; /*hover 시 배경색 변경 천천히*/
+}
+
+/*검색 초기화 버튼 마우스 오버 시 배경색 변경*/
+.clear-search:hover {
+    background: #fee2e2;
+}
+
+/*아이콘(x) 크기를 텍스트보다 살짝 작게*/
+.clear-search i {
+    font-size: 12px;
+}
+
+/*프로필 이미지 자리*/
+.profile-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #8eaee0;
+    cursor: pointer;
+}
+
+/* ─── 실제 프로필 이미지 (img / 이니셜 div 공통) ─── */
+.profile-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    cursor: pointer;
+    border: 2px solid #e5e7eb;
+    transition: border-color 0.2s;
+    display: block;
+    flex-shrink: 0;
+}
+
+.profile-avatar:hover,
+.profile-wrapper.active .profile-avatar {
+    border-color: #2563eb;
+}
+
+/* 이니셜 아바타 (BUSINESS / hatiCode 없는 경우) */
+.profile-avatar-initial {
+    background: #6366f1;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    user-select: none;
+}
+
+/* 미로그인 로그인 버튼 */
+.login-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px;
+    background: #2563eb;
+    color: #fff;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s;
+    white-space: nowrap;
+}
+
+.login-btn:hover {
+    background: #1d4ed8;
+}
+
+.login-btn i {
+    font-size: 16px;
+}
+
+/* 프로필 래퍼 */
+.profile-wrapper {
+    position: relative;
+}
+
+/* 프로필 클릭 시 드롭다운 메뉴 */
+.profile-menu {
+    position: absolute;
+    top: 46px;
+    right: 0;
+    width: 160px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+    display: none;
+    overflow: hidden;
+    z-index: 100;
+}
+
+/* 메뉴 상단: 닉네임 + 권한 표시 */
+.profile-menu-header {
+    padding: 12px 14px 10px;
+    border-bottom: 1px solid #f3f4f6;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.profile-menu-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111827;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.profile-menu-role {
+    font-size: 11px;
+    color: #9ca3af;
+}
+
+/* 메뉴 항목 */
+.profile-menu a {
+    display: block;
+    padding: 10px 14px;
+    font-size: 14px;
+    color: #333;
+    text-decoration: none;
+    transition: background 0.15s;
+}
+
+.profile-menu a:hover {
+    background: #f1f5f9;
+}
+
+/* 로그아웃 강조 */
+.profile-menu-logout {
+    border-top: 1px solid #f3f4f6;
+    color: #ef4444 !important;
+}
+
+.profile-menu-logout:hover {
+    background: #fef2f2 !important;
+}
+
+/* 활성화 상태 */
+.profile-wrapper.active .profile-menu {
+    display: block;
+}
+
+/* Filter */
+/*헤더 아래 필터 바*/
+.filter-section {
+    background: #fff;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 12px 0;
+}
+
+/*필터 좌/ 지도 버튼 우 간격*/
+.filter-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* 왼쪽 필터 그룹 */
+.filter-left {
+    display: flex;
+    gap: 12px;
+}
+
+/* 오른쪽 */
+.filter-right {
+    display: flex;
+    gap: 10px;
+}
+
+.filter-btn {
+    padding: 8px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.filter-item {
+    position: relative;
+}
+
+/* 드롭다운 */
+.filter-menu {
+    position: absolute;
+    top: 44px;
+    left: 0;
+    min-width: 140px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    display: none;
+    z-index: 20; /*프로필 메뉴(100)보단 낮음 → 우선순위 구분*/
+}
+
+/* 활성화 상태 */
+.filter-item.active .filter-btn {
+    border-color: #2563eb;
+    color: #2563eb;
+}
+
+/* 열렸을 때 */
+.filter-item.active .filter-menu {
+    display: block;
+}
+
+/* 필터 메뉴 안의 개별 선택 항목 */
+.filter-option {
+    padding: 10px 14px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.filter-option:hover {
+    background: #f1f5f9;
+}
+
+/* 필터 초기화 버튼 */
+.filter-reset {
+    padding: 8px;
+    border-top: 1px solid #eee;
+    margin-top: 5px;
+}
+
+.reset-btn {
+    width: 100%;
+    padding: 8px 12px;
+    background: #f5f5f5;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #666;
+    transition: all 0.2s;
+}
+
+.reset-btn:hover {
+    background: #e0e0e0;
+    color: #333;
+}
+
+/*아이콘 여백 아이콘과 텍스트 간격 확보*/
+.reset-btn i {
+    margin-right: 4px;
+}
+
+/* 전체 초기화 버튼 */
+.all-reset-btn {
+    padding: 10px 16px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #666;
+    transition: all 0.2s;
+    margin-left: 10px;
+}
+
+.all-reset-btn:hover {
+    background: #f5f5f5;
+    border-color: #999;
+    color: #333;
+}
+
+/* 캘린더 메뉴 */
+.calendar-menu {
+    padding: 10px;
+    min-width: 320px;
+}
+
+/* inline 캘린더 컨테이너 */
+#inlineCalendar {
+    width: 100%;
+}
+
+/* Flatpickr inline 모드 스타일 조정 */
+#inlineCalendar .flatpickr-calendar {
+    box-shadow: none;
+    width: 100%;
+}
+
+
+/* 필터 상태 표시 */
+.filter-status {
+    padding: 15px 0;
+    font-size: 15px;
+    color: #666;
+}
+
+/* 로딩 표시 */
+.loading-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    font-size: 16px;
+    color: #666;
+}
+
+.loading-indicator i {
+    margin-right: 10px;
+    font-size: 20px;
+    color: #4CAF50;
+}
+
+/* 결과 없음 */
+.no-results {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+    text-align: center;
+}
+
+.no-results i {
+    font-size: 48px;
+    color: #ddd;
+    margin-bottom: 20px;
+}
+
+.no-results p {
+    font-size: 16px;
+    color: #999;
+    margin-bottom: 20px;
+}
+
+/* Flatpickr 커스터마이징 */
+.flatpickr-calendar {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-radius: 8px;
+}
+
+.flatpickr-day.selected {
+    background: #4CAF50;
+    border-color: #4CAF50;
+}
+
+.flatpickr-day.selected:hover {
+    background: #45a049;
+    border-color: #45a049;
+}
+
+
+.map-btn {
+    padding: 8px 14px;
+    background: #ffffff;
+    color: #000000;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    cursor: pointer;
+}
+
+.map-btn:hover {
+    background: #f9fafb;
+}
+
+
+/* Main */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 16px;
+}
+
+.facility-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+}
+
+/* Facility Card */
+.facility-card {
+    display: block; /* a 태그를 블록으로 */
+    text-decoration: none; /* 밑줄 제거 */
+    color: inherit; /* 부모 색상 상속 */
+    cursor: pointer; /* 커서 포인터 */
+    transition: transform 0.2s, box-shadow 0.2s; /* 호버 효과를 위한 트랜지션 */
+    border: 1px solid #d1d5db;
+    border-radius: 11px;
+}
+
+.facility-card:hover {
+    transform: translateY(-5px); /* 살짝 올라가는 효과 */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15); /* 그림자 강조 */
+}
+
+/* 방문한 링크 색상 변경 방지 */
+.facility-card:visited {
+    color: inherit;
+}
+
+/* 이미지 스타일  */
+.facility-image {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;      /* 400:300 비율 */
+    background: #e5e7eb;
+    overflow: hidden;
+    border: 1px solid #d1d5db;
+    border-radius: 11px 11px 0 0;
+    
+}
+/*이미지를 부모 요소(.facility-image)의 가로, 세로 폭에 딱 맞춤
+이미지 원본 크기와 상관없이 카드 가로 크기에 맞게 늘어나거나 줄어듦 */
+.facility-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;      
+    display: block;
+}
+
+/*카드 hover시 이미지 확대*/
+.facility-image img {
+    transition: transform 0.3s ease;
+}
+
+.facility-card:hover .facility-image img {
+    transform: scale(1.05);
+}
+
+/*카테고리 배지 이미지 위에 고정 표시*/
+.category-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: #facc15;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    z-index: 1;
+}
+
+.facility-content {
+    padding: 16px;
+}
+
+.facility-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+.facility-subtitle {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.facility-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    margin-bottom: 12px;
+}
+
+.district {
+    color: #666;
+}
+
+.price {
+    color: #2563eb;
+    font-weight: 600;
+    font-size: 15px;
+}
+
+/* Button */
+.detail-btn {
+    display: block;
+    text-align: center;
+    padding: 10px;
+    background: #2563eb;
+    color: #fff;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.detail-btn:hover {
+    background: #1d4ed8;
+}
+
+/* 모달 스타일 */
+/*전체 화면을 덮는 어두운 배경*/
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+    animation: fadeIn 0.3s;
+}
+/*모달 등장 에니메이션*/
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/*중앙 정렬된 카드형 모달*/
+.modal-content {
+    background-color: #fefefe;
+    margin: 3% auto;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 1200px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    animation: slideDown 0.3s;
+}
+/*모달 등장 에니메이션*/
+@keyframes slideDown {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-header {
+    padding: 20px 30px;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 24px;
+    color: #333;
+}
+
+.close {
+    color: #aaa;
+    font-size: 32px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.close:hover,
+.close:focus {
+    color: #000;
+}
+
+.modal-body {
+    padding: 20px 30px 30px;
+}
+/* 지도 내 커스텀 오버레이 스타일 */
+/*지도 카드 대신 표식되는 마커*/
+.custom-overlay {
+    position: relative;
+    background: #fff;
+    border: 2px solid #0080ff;
+    border-radius: 8px;
+    padding: 8px 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+/*마우스 오버시 강조 컨셉 컬러와 통일*/
+.custom-overlay:hover {
+    background: #0080ff;
+    color: white;
+    transform: scale(1.05);
+    box-shadow: 0 4px 16px rgba(0, 128, 255, 0.4); /* hover 시 그림자 강화 */
+}
+/*말풍선 꼬리 표현*/
+.custom-overlay::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid #0080ff;
+}
+
+.custom-overlay:hover::after {
+    border-top-color: #0080ff;
+}
+
+.overlay-title {
+    font-size: 13px;
+    margin-bottom: 4px;
+    color: #333;
+}
+
+.custom-overlay:hover .overlay-title {
+    color: white;
+}
+
+.overlay-price {
+    font-size: 15px;
+    color: #0080ff;
+    font-weight: bold;
+}
+
+.custom-overlay:hover .overlay-price {
+    color: white;
+}
+
+
+/* 무한 스크롤 - 스피너 */
+.infinite-scroll-spinner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 0;
+    font-size: 16px;
+    color: #666;
+    gap: 10px;
+}
+
+.infinite-scroll-spinner i {
+    font-size: 20px;
+    color: #2563eb;
+}
+
+/* 무한 스크롤 - 끝 메시지 */
+.infinite-scroll-end {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 0;
+    gap: 10px;
+}
+
+.infinite-scroll-end i {
+    font-size: 32px;
+    color: #9ca3af;
+}
+
+.infinite-scroll-end p {
+    font-size: 15px;
+    color: #9ca3af;
+}

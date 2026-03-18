@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.hati.payment.mapper.PaymentMapper">
+
+    <!--
+        결제 상세 조회
+        payment + room_reservation + centers + room_slots JOIN
+        소유권 검증 (payment.account_id = userId)
+        PASS_USE / FIRST 구분으로 proc 선택
+        KakaoPay Ready 금액·상품명 구성
+    -->
+    <select id="getPaymentDetail" resultType="map">
+        SELECT
+            p.payment_id                AS "paymentId",
+            p.account_id                AS "userId",
+            p.reservation_id            AS "reservationId",
+            p.original_amount           AS "originalAmount",
+            p.discount_amount           AS "discountAmount",
+            p.final_amount              AS "finalAmount",
+            p.status                    AS "paymentStatus",
+            TO_CHAR(p.expire_at, 'YYYY-MM-DD HH24:MI:SS') AS "expireAt",
+
+            rr.trainer_account_id       AS "trainerAccountId",
+            rr.product_id               AS "productId",
+            rr.pass_id                  AS "passId",
+            rr.counts                   AS "counts",
+            rr.status                   AS "reservationStatus",
+            rr.base_fee_snapshot        AS "roomFee",
+            rr.price_snapshot           AS "ptFee",
+            rr.total_price_snapshot     AS "totalFee",
+            rr.pay_type                 AS "reservationPayType",
+
+            c.center_id                 AS "centerId",
+            c.center_name               AS "centerName",
+            c.center_region             AS "centerRegion",
+
+            v_trainer.nickname          AS "trainerNickname",
+
+            TO_CHAR(MIN(rs.start_time), 'YYYY-MM-DD HH24:MI') AS "startTime",
+            TO_CHAR(MAX(rs.end_time),   'HH24:MI')            AS "endTime"
+
+        FROM payment p
+        JOIN room_reservation rr
+          ON p.reservation_id = rr.reservation_id
+        JOIN reservation_slot_connect rsc
+          ON rr.reservation_id = rsc.reservation_id
+        JOIN room_slots rs
+          ON rsc.slot_id = rs.slot_id
+        JOIN rooms r
+          ON rs.room_id = r.room_id
+        JOIN centers c
+          ON r.center_id = c.center_id
+        LEFT JOIN vw_account_display v_trainer
+          ON rr.trainer_account_id = v_trainer.account_id
+        WHERE p.payment_id = #{paymentId}
+        GROUP BY
+            p.payment_id, p.account_id, p.reservation_id,
+            p.original_amount, p.discount_amount, p.final_amount,
+            p.status, p.expire_at,  -- TO_CHAR는 GROUP BY에 원본 컬럼 사용
+            rr.trainer_account_id, rr.product_id, rr.pass_id, rr.counts,
+            rr.status, rr.base_fee_snapshot, rr.price_snapshot,
+            rr.total_price_snapshot, rr.pay_type,
+            c.center_id, c.center_name, c.center_region,
+            v_trainer.nickname
+    </select>
+
+    <!-- KakaoPay tid 저장 -->
+    <update id="saveKakaoTid">
+        UPDATE payment
+           SET kakao_tid = #{tid}
+         WHERE payment_id = #{paymentId}
+    </update>
+
+    <!-- KakaoPay tid 조회 -->
+    <select id="getKakaoTid" resultType="string">
+        SELECT kakao_tid
+          FROM payment
+         WHERE payment_id = #{paymentId}
+    </select>
+
+</mapper>

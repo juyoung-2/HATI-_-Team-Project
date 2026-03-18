@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="org.hati.room.mapper.CenterDetailMapper">
+
+    <!-- 센터 상세 정보 조회 -->
+    <select id="getCenterDetail" parameterType="int" resultType="org.hati.room.vo.CenterDetailVO">
+        SELECT 
+            c.center_id                     AS centerId,
+            c.center_name                   AS centerName,
+            c.center_content                AS centerContent,
+            c.center_region                 AS centerRegion,
+            c.latitude,
+            c.longitude,
+            c.created_at                    AS createdAt,
+            c.space,
+            c.facility,
+            c.notice,
+            st.category                     AS category,
+            st.base_fee                     AS baseFee,
+            COUNT(DISTINCT cr.account_id)   AS reviewCount,
+            ROUND(AVG(cr.grade), 1)         AS avgGrade
+        FROM centers c
+        LEFT JOIN rooms r        ON c.center_id  = r.center_id
+        LEFT JOIN sports_type st ON r.sport_id   = st.sport_id
+        LEFT JOIN centers_reviews cr ON c.center_id = cr.center_id
+        WHERE c.center_id = #{centerId}
+        GROUP BY 
+            c.center_id, c.center_name, c.center_content, 
+            c.center_region, c.latitude, c.longitude, 
+            c.created_at, c.space, c.facility, c.notice,
+            st.category, st.base_fee
+    </select>
+
+    <!-- 편의시설 목록 조회 -->
+    <select id="getAmenities" parameterType="int" resultType="string">
+        SELECT a.amenity_text
+        FROM rooms r
+        JOIN rooms_amenities_links ral ON r.room_id     = ral.room_id
+        JOIN amenities a               ON ral.amenity_id = a.amenity_id
+        WHERE r.center_id = #{centerId}
+        GROUP BY a.amenity_text
+        ORDER BY a.amenity_text
+    </select>
+
+    <!-- 리뷰 목록 조회 (전체) -->
+    <select id="getReviews" parameterType="int" resultType="org.hati.room.vo.CenterReviewVO">
+        SELECT 
+            cr.center_id   AS centerId,
+            cr.account_id  AS accountId,
+            a.name         AS accountName,
+            cr.grade,
+            cr.content,
+            cr.created_at  AS createdAt,
+            cr.updated_at  AS updatedAt
+        FROM centers_reviews cr
+        JOIN accounts a ON cr.account_id = a.account_id
+        WHERE cr.center_id = #{centerId}
+        ORDER BY cr.created_at DESC
+    </select>
+
+    <!--
+        리뷰 페이징 조회 (AJAX용) - Oracle 11g ROWNUM 방식
+    -->
+    <select id="getReviewsPaged" parameterType="map" resultType="org.hati.room.vo.CenterReviewVO">
+        <![CDATA[
+        SELECT *
+        FROM (
+            SELECT A.*, ROWNUM RN
+            FROM (
+                SELECT
+                    cr.center_id        AS centerId,
+                    cr.account_id       AS accountId,
+                    v.nickname          AS accountName,
+                    v.profile_image_url AS profileImageUrl,
+                    v.hati_code         AS hatiCode,
+                    v.gender            AS gender,
+                    cr.grade,
+                    cr.content,
+                    cr.created_at       AS createdAt,
+                    cr.updated_at       AS updatedAt
+                FROM centers_reviews cr
+                LEFT JOIN vw_account_display v ON cr.account_id = v.account_id
+                WHERE cr.center_id = #{centerId}
+                ORDER BY cr.created_at DESC
+            ) A
+            WHERE ROWNUM <= #{offset} + #{pageSize}
+        )
+        WHERE RN > #{offset}
+        ]]>
+    </select>
+
+    <!-- 리뷰 총 개수 -->
+    <select id="getReviewCount" parameterType="int" resultType="int">
+        SELECT COUNT(*)
+        FROM centers_reviews
+        WHERE center_id = #{centerId}
+    </select>
+
+    <!-- 최신 온습도 조회 -->
+    <select id="getLatestEnvReading" parameterType="int" resultType="org.hati.room.vo.CenterDetailVO">
+        SELECT temperature, humidity
+        FROM (
+            SELECT 
+                rer.temperature,
+                rer.humidity,
+                ROW_NUMBER() OVER (ORDER BY rer.measured_at DESC) AS rn
+            FROM room_env_reading rer
+            JOIN rooms r ON rer.room_id = r.room_id
+            WHERE r.center_id = #{centerId}
+        ) sub
+        WHERE rn = 1
+    </select>
+
+    <!-- 예약 가능 슬롯 조회 -->
+    <select id="getAvailableSlots" resultType="org.hati.room.vo.RoomSlotVO">
+        SELECT 
+            slot_id     AS slotId,
+            room_id     AS roomId,
+            slot_date   AS slotDate,
+            start_time  AS startTime,
+            end_time    AS endTime,
+            status,
+            hold_until  AS holdUntil,
+            updated_at  AS updatedAt,
+            TO_NUMBER(TO_CHAR(start_time, 'HH24')) AS hour,
+            CASE WHEN status = 'AVAILABLE' THEN 1 ELSE 0 END AS available
+        FROM room_slots
+        WHERE room_id = #{roomId}
+          AND TRUNC(slot_date) = TO_DATE(#{slotDate}, 'YYYY-MM-DD')
+          AND status IN ('AVAILABLE', 'HOLD')
+        ORDER BY start_time
+    </select>
+
+    <!-- 찜 여부 확인 -->
+    <select id="checkBookmark" resultType="int">
+        SELECT COUNT(*)
+        FROM room_booking
+        WHERE account_id = #{accountId}
+          AND room_id    = #{roomId}
+    </select>
+
+    <!-- 찜 추가 -->
+    <insert id="addBookmark">
+        INSERT INTO room_booking (account_id, room_id)
+        VALUES (#{accountId}, #{roomId})
+    </insert>
+
+    <!-- 찜 삭제 -->
+    <delete id="removeBookmark">
+        DELETE FROM room_booking
+        WHERE account_id = #{accountId}
+          AND room_id    = #{roomId}
+    </delete>
+
+    <!-- 헤더 프로필 조회 -->
+    <select id="getHeaderProfile" parameterType="int" resultType="org.hati.room.vo.HeaderProfileVO">
+        SELECT
+            v.nickname          AS displayName,
+            v.profile_image_url AS profileImageUrl,
+            v.hati_code         AS hatiCode,
+            up.gender           AS gender,
+            a.role_type         AS roleType
+        FROM accounts a
+        LEFT JOIN vw_account_display v ON a.account_id = v.account_id
+        LEFT JOIN user_profile up      ON a.account_id = up.account_id
+        WHERE a.account_id = #{accountId}
+    </select>
+
+    <!-- ═══════════════════════════════════════════════════
+         트레이너와 함께 기능
+         ═══════════════════════════════════════════════════ -->
+
+    <!--
+        트레이너의 가격표 조회 (sportId 기준)
+        centerId의 룸 sportId와 매칭되는 상품만 반환
+    -->
+    <select id="getTrainerProducts" resultType="org.hati.room.vo.TrainerProductVO">
+        SELECT
+            product_id          AS productId,
+            account_id          AS trainerAccountId,
+            sport_id            AS sportId,
+            total_count         AS totalCount,
+            price,
+            base_fee            AS baseFee
+        FROM trainer_pass_product
+        WHERE account_id = #{trainerId}
+          AND sport_id   = #{sportId}
+        ORDER BY total_count
+    </select>
+
+    <!--
+        닉네임 + 핸들 복합 검색
+        user_profile UNIQUE (nickname, handle) 복합키 기준으로 정확히 1명만 특정 가능
+        USER 계정 + ACTIVE 상태만 반환
+    -->
+    <select id="getUserByNicknameAndHandle" resultType="map">
+        SELECT
+            a.account_id        AS "accountId",
+            v.nickname          AS "nickname",
+            v.handle            AS "handle",
+            v.hati_code         AS "hatiCode",
+            v.gender            AS "gender",
+            v.profile_image_url AS "profileImageUrl",
+            a.role_type         AS "roleType"
+        FROM accounts a
+        JOIN vw_account_display v ON a.account_id = v.account_id
+        JOIN user_profile up      ON a.account_id = up.account_id
+        WHERE up.nickname = #{nickname}
+          AND up.handle   = '@' || #{handle}  <!-- DB handle은 '@핸들' 형식으로 저장됨 -->
+          AND a.role_type = 'USER'
+          AND a.status    = 'ACTIVE'
+    </select>
+
+    <!--
+        유저의 ACTIVE 이용권 조회 (특정 product 기준)
+        있으면 → PASS_USE (이용권 차감)
+        없으면 → FIRST (새 이용권 구매)
+    -->
+    <!-- Oracle 11g: ROWNUM 방식으로 최신 1건만 조회 -->
+    <select id="getUserActivePass" resultType="map">
+        SELECT pass_id AS passId, remaining_count AS remainingCount
+        FROM (
+            SELECT pass_id, remaining_count
+            FROM user_pass
+            WHERE account_id = #{userId}
+              AND product_id = #{productId}
+              AND status     = 'ACTIVE'
+              AND remaining_count > 0
+            ORDER BY created_at DESC
+        )
+        WHERE ROWNUM = 1
+    </select>
+
+</mapper>

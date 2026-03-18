@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.hati.admin.mapper.AdminChatMessageMapper">
+
+	<sql id="chatWhere">
+		<where>
+			<if test="nickname != null and nickname != ''">
+				AND d.nickname LIKE '%' || #{nickname} || '%'
+			</if>
+
+			<if test="handle != null and handle != ''">
+				AND d.handle LIKE '%' || #{handle} || '%'
+			</if>
+
+			<if test="content != null and content != ''">
+				AND DBMS_LOB.INSTR(m.content, #{content}) &gt; 0
+			</if>
+
+			<if test="roleType != null and roleType != ''">
+				AND d.role_type = #{roleType}
+			</if>
+
+			<if test="isDeleted != null and isDeleted != ''">
+				AND m.is_deleted = #{isDeleted}
+			</if>
+
+			<if test="createdFrom != null and createdFrom != ''">
+				AND m.created_at &gt;= TO_DATE(#{createdFrom}, 'YYYY-MM-DD')
+			</if>
+
+			<if test="createdTo != null and createdTo != ''">
+				AND m.created_at &lt; TO_DATE(#{createdTo}, 'YYYY-MM-DD') + 1
+			</if>
+
+			<if test="onlyReported != null and onlyReported">
+				AND EXISTS (
+				SELECT 1
+				FROM reports rp
+				WHERE rp.target_type = 'CHAT_MESSAGE'
+				AND rp.target_id = m.message_id
+				)
+			</if>
+		</where>
+	</sql>
+
+	<select id="count"
+		parameterType="org.hati.admin.chat.domain.AdminChatMessageSearchRequest"
+		resultType="int">
+		SELECT COUNT(*)
+		FROM chat_messages m
+		JOIN vw_account_display d
+		ON m.sender_account_id = d.account_id
+		<include refid="chatWhere" />
+	</select>
+
+	<select id="findPage"
+		parameterType="org.hati.admin.chat.domain.AdminChatMessageSearchRequest"
+		resultType="org.hati.admin.chat.domain.AdminChatMessageListItemDTO">
+
+		SELECT *
+		FROM (
+		SELECT
+		m.message_id AS messageId,
+		m.room_id AS roomId,
+		m.sender_account_id AS senderAccountId,
+		d.nickname,
+		d.handle,
+		d.role_type AS roleType,
+		d.profile_image_url AS profileImageUrl,
+		m.is_deleted AS isDeleted,
+		TO_CHAR(m.created_at, 'YYYY-MM-DD HH24:MI:SS') AS createdAt,
+		m.content AS content,
+
+		ROW_NUMBER() OVER(
+		ORDER BY
+		<choose>
+			<when test="sort == 'createdAtAsc'">m.created_at ASC</when>
+			<otherwise>m.created_at DESC</otherwise>
+		</choose>
+		) AS rn
+
+		FROM chat_messages m
+		JOIN vw_account_display d
+		ON m.sender_account_id = d.account_id
+		<include refid="chatWhere" />
+		)
+		WHERE rn &gt; ( (#{page} - 1) * #{size} )
+		AND rn &lt;= ( #{page} * #{size} )
+
+	</select>
+
+	<update id="softDelete">
+		UPDATE chat_messages
+		SET is_deleted = 'Y'
+		WHERE message_id = #{messageId}
+	</update>
+
+</mapper>

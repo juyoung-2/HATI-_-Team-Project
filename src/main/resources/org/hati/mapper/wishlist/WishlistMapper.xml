@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.hati.wishlist.mapper.WishlistMapper">
+
+    <!--
+        찜 목록 조회
+        room_booking 기준으로 JOIN 전개
+          → rooms       : roomId로 centerId, sportId 연결
+          → centers     : centerName, centerRegion
+          → sports_type : category, base_fee
+          → centers_reviews (LEFT): reviewCount, avgGrade 집계
+        찜 등록일(room_booking.created_at) 최신순 정렬
+    -->
+    <select id="getWishlistByAccount" parameterType="int" resultType="org.hati.wishlist.vo.WishlistVO">
+        SELECT
+            rb.room_id                        AS roomId,
+            c.center_id                       AS centerId,
+            c.center_name                     AS centerName,
+            c.center_region                   AS centerRegion,
+            st.category                       AS category,
+            st.base_fee                       AS baseFee,
+            COUNT(cr.account_id)              AS reviewCount,
+            ROUND(AVG(cr.grade), 1)           AS avgGrade,
+            rb.created_at                     AS createdAt
+        FROM room_booking rb
+        JOIN  rooms r        ON rb.room_id   = r.room_id
+        JOIN  centers c      ON r.center_id  = c.center_id
+        JOIN  sports_type st ON r.sport_id   = st.sport_id
+        LEFT JOIN centers_reviews cr ON c.center_id = cr.center_id
+        WHERE rb.account_id = #{accountId}
+        GROUP BY
+            rb.room_id,
+            c.center_id,
+            c.center_name,
+            c.center_region,
+            st.category,
+            st.base_fee,
+            rb.created_at
+        ORDER BY rb.created_at DESC
+    </select>
+
+    <!-- 찜 삭제 (단방향 DELETE, 항상 삭제만 수행) -->
+    <delete id="removeBookmark">
+        DELETE FROM room_booking
+        WHERE account_id = #{accountId}
+          AND room_id    = #{roomId}
+    </delete>
+
+    <!-- 찜 총 개수 -->
+    <select id="getWishlistCount" parameterType="int" resultType="int">
+        SELECT COUNT(*)
+        FROM room_booking
+        WHERE account_id = #{accountId}
+    </select>
+
+</mapper>

@@ -1,0 +1,124 @@
+.report-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.report-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.report-modal__dialog {
+  position: relative;
+  z-index: 1;
+  width: 520px;
+  max-width: calc(100vw - 32px);
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 24px;
+  box-sizing: border-box;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+}
+
+.report-modal__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  border: 0;
+  background: transparent;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.report-modal__title {
+  margin: 0 0 20px;
+  font-size: 22px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.report-modal__info {
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  background: #f9fafb;
+  border-radius: 12px;
+}
+
+.report-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.report-row + .report-row {
+  margin-top: 10px;
+}
+
+.report-row__label {
+  flex: 0 0 90px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.report-row__value {
+  flex: 1 1 auto;
+  text-align: right;
+  font-size: 14px;
+  color: #111827;
+  word-break: break-all;
+}
+
+.report-modal__body {
+  margin-bottom: 20px;
+}
+
+.report-modal__textarea {
+  width: 100%;
+  min-height: 140px;
+  padding: 14px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  box-sizing: border-box;
+  resize: none;
+  font-size: 14px;
+  line-height: 1.5;
+  outline: none;
+}
+
+.report-modal__textarea:focus {
+  border-color: #111827;
+}
+
+.report-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.report-btn {
+  min-width: 92px;
+  height: 42px;
+  padding: 0 18px;
+  border-radius: 10px;
+  border: 0;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.report-btn--cancel {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.report-btn--submit {
+  background: #111827;
+  color: #ffffff;
+}

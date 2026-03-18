@@ -1,0 +1,110 @@
+/* auth-signup.css */
+@import url("/resources/css/util.css");
+
+/* ===== Layout (auth 화면에서는 header/footer 숨김) ===== */
+header.header { display: none; }
+footer, .footer { display: none; }
+#content { padding: 0; }
+
+.auth-bg { background: #F0F2F5; }
+
+/* ===== Typography ===== */
+.auth-brand-title{
+  color:#1877F2;
+  font-size:42px;
+  font-weight:700;
+  line-height:1.2;
+  margin:0;
+}
+.auth-brand-subtitle{
+  font-size:22px;
+  color:#1C1E21;
+  margin:0;
+}
+.helper-gray{ color:#606770; }
+
+/* ===== Button ===== */
+.btn-blue{
+  width:100%;
+  height:3rem;
+  font-size:1rem;
+  border-radius:0.375rem;
+  background:#1877F2;
+  color:#fff;
+  border:none;
+}
+
+/* ===== Form spacing (util의 space-y override: auth에서만 컴팩트) ===== */
+.auth-bg form.space-y-4 > * + *{ margin-top: 24px; }
+.auth-bg .space-y-3 > * + *{ margin-top: 20px; }
+.auth-bg .border-t{ margin: 18px 0; } 
+
+/* ===== Field 안정화: 오버플로우/폭 계산 꼬임 방지 ===== */
+.auth-bg input,
+.auth-bg textarea,
+.auth-bg select,
+.auth-bg button{
+  box-sizing: border-box;
+}
+
+.auth-bg textarea{
+  width: 100%;
+  max-width: 100%;
+  display: block;
+}
+/* #pwMatchMsg, #pwStrengthMsg { min-height: 8px; } */
+
+/* ===== Tabs (registerPro) ===== */
+.role-tabs{
+  display:flex;
+  gap:8px;
+  margin-bottom:16px;
+}
+.tab-btn{
+  flex:1;
+  height:40px;
+  border-radius:8px;
+  border:1px solid #D1D5DB;
+  background:#fff;
+  font-size:14px;
+}
+.tab-btn.active{
+  border-color:#1877F2;
+  color:#1877F2;
+  font-weight:700;
+}
+
+/* ===== Fanname row (닉네임@핸들 + 중복확인 버튼) ===== */
+.fanname-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.fanname-row #fanNickname,
+.fanname-row #fanHandle{
+  flex: 1 1 0;
+  min-width: 0;
+}
+.fanname-row #btnCheckFanname{
+  flex: 0 0 auto;
+  min-width: 92px;
+  white-space: nowrap;
+  padding: 0 14px;
+}
+.fanname-row span{
+  flex: 0 0 auto;
+}
+
+/* 화면이 아주 좁을 때 버튼은 아래로 */
+@media (max-width: 420px){
+  .fanname-row{ flex-wrap: wrap; }
+  .fanname-row #btnCheckFanname{ width: 100%; }
+}
+
+/* ===== Intro textarea (자기소개) ===== */
+.intro-textarea{
+  height: 110px;
+  line-height: 1.45;
+  padding: 12px 14px;
+}
+.auth-bg textarea { resize: none !important; }

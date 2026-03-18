@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.hati.follow.mapper.FollowMapper">
+
+	<resultMap id="followResultMap" type="org.hati.follow.vo.FollowVO">
+	    <result property="accountId"  column="ACCOUNT_ID"/>
+	    <result property="nickname"   column="NICKNAME"/>
+	    <result property="handle"     column="HANDLE"/>
+	    <result property="intro"      column="INTRO"/>
+	    <result property="hatiCode"   column="HATI_CODE"/>
+	    <result property="isFollowing" column="IS_FOLLOWING"/>
+	    <result property="profileImageUrl" column="PROFILE_IMAGE_URL"/>
+		<result property="gender"          column="GENDER"/>
+	</resultMap>
+	
+	<!-- 팔로잉 리스트 불러오기 -->
+	<select id="selectFollowingList" parameterType="long" resultMap="followResultMap">
+	    SELECT a.ACCOUNT_ID, p.NICKNAME, p.HANDLE, p.INTRO, p.HATI_CODE,
+	           p.GENDER,
+		       (SELECT mf.URL FROM MEDIA_FILES mf
+		        WHERE mf.REF_TYPE = 'PROFILE' AND mf.REF_ID = a.ACCOUNT_ID AND ROWNUM = 1
+		       ) AS PROFILE_IMAGE_URL
+	    FROM USER_FOLLOW f
+	    JOIN ACCOUNTS a ON a.ACCOUNT_ID = f.DST_ACCOUNT_ID
+	    JOIN USER_PROFILE p ON p.ACCOUNT_ID = a.ACCOUNT_ID
+	    WHERE f.SRC_ACCOUNT_ID = #{myId}
+	    AND a.STATUS = 'ACTIVE'
+	    ORDER BY f.CREATED_AT DESC
+	</select>
+	
+	<!-- 팔로워 리스트 불러오기 -->
+	<select id="selectFollowerList" parameterType="long" resultMap="followResultMap">
+	    SELECT a.ACCOUNT_ID, p.NICKNAME, p.HANDLE, p.INTRO, p.HATI_CODE,
+		       p.GENDER,
+		       (SELECT mf.URL FROM MEDIA_FILES mf
+		        WHERE mf.REF_TYPE = 'PROFILE' AND mf.REF_ID = a.ACCOUNT_ID AND ROWNUM = 1
+		       ) AS PROFILE_IMAGE_URL,
+		       CASE WHEN EXISTS (
+		           SELECT 1 FROM USER_FOLLOW
+		           WHERE SRC_ACCOUNT_ID = #{myId}
+		           AND DST_ACCOUNT_ID = a.ACCOUNT_ID
+		       ) THEN 1 ELSE 0 END AS IS_FOLLOWING
+	    FROM USER_FOLLOW f
+	    JOIN ACCOUNTS a ON a.ACCOUNT_ID = f.SRC_ACCOUNT_ID
+	    JOIN USER_PROFILE p ON p.ACCOUNT_ID = a.ACCOUNT_ID
+	    WHERE f.DST_ACCOUNT_ID = #{myId}
+	    AND a.STATUS = 'ACTIVE'
+	    AND NOT EXISTS (
+	        SELECT 1 FROM USER_BLOCK
+	        WHERE SRC_ACCOUNT_ID = #{myId} AND DST_ACCOUNT_ID = a.ACCOUNT_ID
+	    )
+	    ORDER BY f.CREATED_AT DESC
+	</select>
+	
+	<!-- 추천 리스트 불러오기 -->
+	<select id="selectSuggestionList" parameterType="long" resultMap="followResultMap">
+	    SELECT * FROM (
+	        SELECT DISTINCT a.ACCOUNT_ID, p.NICKNAME, p.HANDLE, p.INTRO, p.HATI_CODE,
+	               p.GENDER,
+			       (SELECT mf.URL FROM MEDIA_FILES mf
+			        WHERE mf.REF_TYPE = 'PROFILE' AND mf.REF_ID = a.ACCOUNT_ID AND ROWNUM = 1
+			       ) AS PROFILE_IMAGE_URL,
+			       0 AS IS_FOLLOWING
+	        FROM ACCOUNTS a
+	        JOIN USER_PROFILE p ON p.ACCOUNT_ID = a.ACCOUNT_ID
+	        JOIN USER_PROFILE my ON my.ACCOUNT_ID = #{myId}
+	        JOIN HATI_MASTER hm ON hm.HATI_CODE = my.HATI_CODE
+	        WHERE a.ACCOUNT_ID != #{myId}
+	        AND a.STATUS = 'ACTIVE'
+	        <!-- 이미 팔로잉 제외 -->
+	        AND NOT EXISTS (
+	            SELECT 1 FROM USER_FOLLOW
+	            WHERE SRC_ACCOUNT_ID = #{myId} AND DST_ACCOUNT_ID = a.ACCOUNT_ID
+	        )
+	        <!-- 이미 팔로워 제외 -->
+	        AND NOT EXISTS (
+	            SELECT 1 FROM USER_FOLLOW
+	            WHERE SRC_ACCOUNT_ID = a.ACCOUNT_ID AND DST_ACCOUNT_ID = #{myId}
+	        )
+	        <!-- 차단 제외 (내가 차단한 + 나를 차단한) -->
+	        AND NOT EXISTS (
+	            SELECT 1 FROM USER_BLOCK
+	            WHERE (SRC_ACCOUNT_ID = #{myId} AND DST_ACCOUNT_ID = a.ACCOUNT_ID)
+	               OR (SRC_ACCOUNT_ID = a.ACCOUNT_ID AND DST_ACCOUNT_ID = #{myId})
+	        )
+	        AND (
+	            hm.BEST_MATCH   LIKE '%' || p.HATI_CODE || '%'
+	            OR hm.NORMAL_MATCH LIKE '%' || p.HATI_CODE || '%'
+	            OR EXISTS (
+	                SELECT 1 FROM USER_FOLLOW f1
+	                JOIN USER_FOLLOW f2 ON f1.DST_ACCOUNT_ID = f2.SRC_ACCOUNT_ID
+	                WHERE f1.SRC_ACCOUNT_ID = #{myId}
+	                AND f2.DST_ACCOUNT_ID = a.ACCOUNT_ID
+	            )
+	        )
+	        ORDER BY DBMS_RANDOM.VALUE
+	    )
+	    <!-- 5명만 랜덤으로 뽑기 -->
+	    WHERE ROWNUM <![CDATA[<=]]> 5
+	</select>
+	
+	<!-- 팔로우 -->
+	<insert id="insertFollow">
+	    INSERT INTO USER_FOLLOW (SRC_ACCOUNT_ID, DST_ACCOUNT_ID)
+	    VALUES (#{myId}, #{targetId})
+	</insert>
+	
+	<!-- 언팔로우 -->
+	<delete id="deleteFollow">
+	    DELETE FROM USER_FOLLOW
+	    WHERE SRC_ACCOUNT_ID = #{myId} AND DST_ACCOUNT_ID = #{targetId}
+	</delete>
+	
+	<!--  차단 기능은 게시물에서 구현하지만 임시로 남기기 -->
+	<insert id="insertBlock">
+	    INSERT INTO USER_BLOCK (SRC_ACCOUNT_ID, DST_ACCOUNT_ID)
+	    VALUES (#{myId}, #{targetId})
+	</insert>
+	
+	<!-- 차단 시 양방향 팔로우 삭제 -->
+	<delete id="deleteFollowBothSide">
+	    DELETE FROM USER_FOLLOW
+	    WHERE (SRC_ACCOUNT_ID = #{myId} AND DST_ACCOUNT_ID = #{targetId})
+	       OR (SRC_ACCOUNT_ID = #{targetId} AND DST_ACCOUNT_ID = #{myId})
+	</delete>
+	
+	<!-- 팔로잉 체크 (Profile용) -->	
+	<select id="checkFollowing" resultType="int">
+	    SELECT COUNT(*) FROM USER_FOLLOW
+	    WHERE SRC_ACCOUNT_ID = #{myId}
+	      AND DST_ACCOUNT_ID = #{targetId}
+	</select>
+</mapper>

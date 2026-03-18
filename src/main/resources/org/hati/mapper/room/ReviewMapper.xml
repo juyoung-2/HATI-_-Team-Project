@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="org.hati.room.mapper.ReviewMapper">
+
+    <!-- 특정 센터의 모든 리뷰 조회 -->
+    <select id="getReviewsByCenter" parameterType="int" resultType="org.hati.room.vo.CenterReviewVO">
+        SELECT 
+            cr.center_id   AS centerId,
+            cr.account_id  AS accountId,
+            cr.content,
+            cr.grade,
+            cr.created_at  AS createdAt,
+            cr.updated_at  AS updatedAt,
+            a.name         AS accountName
+        FROM centers_reviews cr
+        LEFT JOIN accounts a ON cr.account_id = a.account_id
+        WHERE cr.center_id = #{centerId}
+        ORDER BY cr.created_at DESC
+    </select>
+    
+    <!-- 특정 사용자의 모든 리뷰 조회 (내 이용후기 목록) -->
+    <!-- accountName 불필요 (본인 리뷰이므로), centerName JOIN만 유지 -->
+    <select id="getReviewsByAccount" parameterType="int" resultType="org.hati.room.vo.CenterReviewVO">
+        SELECT 
+            cr.center_id   AS centerId,
+            cr.account_id  AS accountId,
+            cr.content,
+            cr.grade,
+            cr.created_at  AS createdAt,
+            cr.updated_at  AS updatedAt,
+            c.center_name  AS centerName
+        FROM centers_reviews cr
+        LEFT JOIN centers c ON cr.center_id = c.center_id
+        WHERE cr.account_id = #{accountId}
+        ORDER BY cr.created_at DESC
+    </select>
+    
+    <!-- 특정 리뷰 단건 조회 (복합키: center_id + account_id) -->
+    <select id="getReview" resultType="org.hati.room.vo.CenterReviewVO">
+        SELECT 
+            cr.center_id   AS centerId,
+            cr.account_id  AS accountId,
+            cr.content,
+            cr.grade,
+            cr.created_at  AS createdAt,
+            cr.updated_at  AS updatedAt,
+            a.name         AS accountName,
+            c.center_name  AS centerName
+        FROM centers_reviews cr
+        LEFT JOIN accounts a ON cr.account_id = a.account_id
+        LEFT JOIN centers c  ON cr.center_id  = c.center_id
+        WHERE cr.center_id  = #{centerId}
+          AND cr.account_id = #{accountId}
+    </select>
+    
+    <!-- 리뷰 작성 -->
+    <!-- centers_reviews PK = (center_id, account_id) → 한 센터당 1리뷰 정책 -->
+    <insert id="insertReview" parameterType="org.hati.room.vo.CenterReviewVO">
+        INSERT INTO centers_reviews (
+            center_id,
+            account_id,
+            content,
+            grade,
+            created_at
+        ) VALUES (
+            #{centerId},
+            #{accountId},
+            #{content},
+            #{grade},
+            SYSDATE
+        )
+    </insert>
+    
+    <!-- 리뷰 수정 (복합키) -->
+    <!-- updated_at은 trg_centers_reviews_bu 트리거가 자동으로 SYSDATE 세팅 -->
+    <update id="updateReview" parameterType="org.hati.room.vo.CenterReviewVO">
+        UPDATE centers_reviews
+        SET content = #{content},
+            grade   = #{grade}
+        WHERE center_id  = #{centerId}
+          AND account_id = #{accountId}
+    </update>
+    
+    <!-- 리뷰 삭제 (복합키) -->
+    <delete id="deleteReview">
+        DELETE FROM centers_reviews
+        WHERE center_id  = #{centerId}
+          AND account_id = #{accountId}
+    </delete>
+    
+    <!-- 센터별 리뷰 통계 조회 (별점 분포 포함) -->
+    <select id="getReviewStats" parameterType="int" resultType="map">
+        SELECT 
+            COUNT(*)                                    AS reviewCount,
+            ROUND(AVG(grade), 1)                        AS avgGrade,
+            COUNT(CASE WHEN grade = 5 THEN 1 END)       AS grade5Count,
+            COUNT(CASE WHEN grade = 4 THEN 1 END)       AS grade4Count,
+            COUNT(CASE WHEN grade = 3 THEN 1 END)       AS grade3Count,
+            COUNT(CASE WHEN grade = 2 THEN 1 END)       AS grade2Count,
+            COUNT(CASE WHEN grade = 1 THEN 1 END)       AS grade1Count
+        FROM centers_reviews
+        WHERE center_id = #{centerId}
+    </select>
+    
+    <!-- 리뷰 작성 여부 확인 (insertReview 전 중복 방지 체크용) -->
+    <select id="hasReview" resultType="int">
+        SELECT COUNT(*)
+        FROM centers_reviews
+        WHERE center_id  = #{centerId}
+          AND account_id = #{accountId}
+    </select>
+
+</mapper>

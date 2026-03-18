@@ -1,0 +1,115 @@
+/* ===== Memo Modal ===== */
+.memo-modal{
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+}
+
+.memo-modal.is-open{ display: block; }
+
+.memo-modal__backdrop{
+  position:absolute;
+  inset:0;
+  background: rgba(0,0,0,.35);
+}
+
+.memo-modal__dialog{
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+
+  width: min(560px, calc(100vw - 32px)); /* ✅ vw 기준으로 */
+  max-width: calc(100vw - 32px);
+  box-sizing: border-box;
+
+  background: #f5f6f7;
+  border-radius: 10px;
+  overflow: auto;
+   padding: 16px;
+}
+
+
+.memo-modal__header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border, #E4E6EB);
+}
+
+.memo-modal__title{
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text, #050505);
+}
+
+.memo-modal__close{
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--sub, #606770);
+}
+
+.memo-modal__body{
+  padding: 12px 18px
+   background: transparent;
+}
+
+.memo-modal__textarea{
+  width: 100%;
+  box-sizing: border-box;
+  
+  min-height: 84px;
+  height: 84px;  
+  resize: none;
+  padding: 10px 12px;
+   margin: 0;
+  border-radius: 8px;
+  border: 1px solid #DADDE1;
+  outline: none;
+  font-size: 14px;
+  background: #fff;
+  
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.memo-modal__textarea:focus{
+  border-color: #78A7FF;                 /* 연한 파랑 */
+  box-shadow: 0 0 0 4px rgba(24,119,242,.26); /* 사진 같은 부드러운 halo */
+ 
+}
+
+.memo-modal__footer{
+  display:flex;
+  justify-content:flex-end;
+  gap: 10px;
+  padding: 14px 18px;
+  background: transparent;
+}
+
+.memo-modal__btn{
+  min-width: 72px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid var(--border, #E4E6EB);
+  background: #fff;
+}
+
+.memo-modal__btn--ghost{
+  background: #fff;
+}
+
+.memo-modal__btn--primary{
+  border-color: var(--primary, #1877F2);
+  background: var(--primary, #1877F2);
+  color: #fff;
+}

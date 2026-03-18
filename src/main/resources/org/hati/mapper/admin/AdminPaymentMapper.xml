@@ -1,0 +1,511 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.hati.admin.mapper.AdminPaymentMapper">
+	<!-- 공통 정렬 fragment -->
+	<sql id="reservationOrderBy">
+		<choose>
+			<when test="sort == 'createdAtAsc'"> ORDER BY rr.created_at ASC </when>
+			<otherwise> ORDER BY rr.created_at DESC </otherwise>
+		</choose>
+	</sql>
+
+	<sql id="passOrderBy">
+		<choose>
+			<when test="sort == 'createdAtAsc'"> ORDER BY up.created_at ASC </when>
+			<otherwise> ORDER BY up.created_at DESC </otherwise>
+		</choose>
+	</sql>
+
+	<sql id="paymentOrderBy">
+		<choose>
+			<when test="sort == 'createdAtAsc'"> ORDER BY p.created_at ASC </when>
+			<otherwise> ORDER BY p.created_at DESC </otherwise>
+		</choose>
+	</sql>
+
+	<!-- 예약 목록 -->
+	<select id="findReservations"
+		parameterType="org.hati.admin.payment.domain.ReservationSearchRequest"
+		resultType="org.hati.admin.payment.domain.ReservationListItemDTO">
+		SELECT * FROM (
+		SELECT inner_q.*, ROWNUM rn
+		FROM (
+		SELECT
+		rr.reservation_id AS reservationId,
+		rr.user_account_id AS
+		userAccountId,
+		ad.nickname,
+		ad.handle,
+		ad.role_type AS roleType,
+		rr.status,
+		rr.pay_type AS payType,
+		TO_CHAR(rr.created_at, 'YYYY-MM-DD
+		HH24:MI:SS') AS createdAt
+		FROM room_reservation rr
+		JOIN
+		vw_account_display ad
+		ON rr.user_account_id = ad.account_id
+		<where>
+			<if test="nickname != null and nickname != ''">
+				AND ad.nickname LIKE '%' || #{nickname} || '%'
+			</if>
+			<if test="handle != null and handle != ''">
+				AND ad.handle LIKE '%' || #{handle} || '%'
+			</if>
+			<if test="status != null and status != ''">
+				AND rr.status = #{status}
+			</if>
+			<if test="payType != null and payType != ''">
+				AND rr.pay_type = #{payType}
+			</if>
+			<if test="createdFrom != null and createdFrom != ''">
+				AND rr.created_at &gt;= TO_DATE(#{createdFrom},
+				'YYYY-MM-DD')
+			</if>
+			<if test="createdTo != null and createdTo != ''">
+				AND rr.created_at &lt; TO_DATE(#{createdTo},
+				'YYYY-MM-DD') + 1
+			</if>
+		</where>
+		<include refid="reservationOrderBy" />
+		) inner_q
+		WHERE ROWNUM &lt;= #{offset} + #{size}
+		)
+		WHERE rn &gt;
+		#{offset}
+	</select>
+
+	<select id="countReservations"
+		parameterType="org.hati.admin.payment.domain.ReservationSearchRequest"
+		resultType="int">
+		SELECT COUNT(*)
+		FROM room_reservation rr
+		JOIN vw_account_display ad
+		ON
+		rr.user_account_id = ad.account_id
+		<where>
+			<if test="nickname != null and nickname != ''">
+				AND ad.nickname LIKE '%' || #{nickname} || '%'
+			</if>
+			<if test="handle != null and handle != ''">
+				AND ad.handle LIKE '%' || #{handle} || '%'
+			</if>
+			<if test="status != null and status != ''">
+				AND rr.status = #{status}
+			</if>
+			<if test="payType != null and payType != ''">
+				AND rr.pay_type = #{payType}
+			</if>
+			<if test="createdFrom != null and createdFrom != ''">
+				AND rr.created_at &gt;= TO_DATE(#{createdFrom},
+				'YYYY-MM-DD')
+			</if>
+			<if test="createdTo != null and createdTo != ''">
+				AND rr.created_at &lt; TO_DATE(#{createdTo},
+				'YYYY-MM-DD') + 1
+			</if>
+		</where>
+	</select>
+
+	<!-- 예약 상세 -->
+	<select id="findReservationDetail"
+		resultType="org.hati.admin.payment.domain.ReservationDetailDTO">
+		SELECT
+		rr.reservation_id AS reservationId,
+		rr.user_account_id AS userAccountId,
+		u.profile_image_url AS
+		userProfileImageUrl,
+		u.nickname,
+		u.handle,
+		u.role_type AS roleType,
+		rr.status,
+		rr.pay_type AS payType,
+		TO_CHAR(vr.slot_date, 'YYYY-MM-DD')
+		AS slotDate,
+		TO_CHAR(vr.reservation_start_time, 'YYYY-MM-DD
+		HH24:MI:SS') AS reservationStartTime,
+		TO_CHAR(vr.reservation_end_time,
+		'YYYY-MM-DD HH24:MI:SS') AS
+		reservationEndTime,
+		vr.room_id AS roomId,
+		vr.center_name AS centerName,
+		rr.trainer_account_id AS
+		trainerAccountId,
+		t.nickname AS trainerNickname,
+		t.handle AS
+		trainerHandle,
+		t.profile_image_url AS trainerProfileImageUrl,
+		rr.counts,
+		rr.base_fee_snapshot AS baseFeeSnapshot,
+		rr.price_snapshot AS
+		priceSnapshot,
+		rr.total_price_snapshot AS totalPriceSnapshot,
+		TO_CHAR(rr.created_at, 'YYYY-MM-DD HH24:MI:SS') AS createdAt
+		FROM
+		room_reservation rr
+		JOIN vw_account_display u
+		ON rr.user_account_id =
+		u.account_id
+		LEFT JOIN vw_account_display t
+		ON rr.trainer_account_id =
+		t.account_id
+		LEFT JOIN vw_reservation_base vr
+		ON rr.reservation_id =
+		vr.reservation_id
+		WHERE rr.reservation_id = #{reservationId}
+	</select>
+
+	<!-- 예약 노쇼 처리 -->
+	<update id="updateReservationNoShow">
+		UPDATE room_reservation
+		SET status = 'NO_SHOW'
+		WHERE
+		reservation_id = #{reservationId}
+		AND status = 'COMPLETED'
+	</update>
+
+	<update id="updatePassUsageReasonToNoShow">
+		UPDATE pass_usage_history
+		SET reason = 'NO_SHOW'
+		WHERE
+		reservation_id = #{reservationId}
+		AND reason = 'COMPLETED'
+	</update>
+
+	<!-- 이용권 목록/상세 -->
+	<select id="findPasses"
+		parameterType="org.hati.admin.payment.domain.PassSearchRequest"
+		resultType="org.hati.admin.payment.domain.PassListItemDTO">
+		SELECT * FROM (
+		SELECT inner_q.*, ROWNUM rn
+		FROM (
+		SELECT
+		up.pass_id AS
+		passId,
+		up.user_account_id AS userAccountId,
+		up.user_nickname AS
+		nickname,
+		up.user_handle AS handle,
+		'USER' AS roleType,
+		up.status,
+		TO_CHAR(up.created_at, 'YYYY-MM-DD HH24:MI:SS') AS createdAt
+		FROM
+		vw_user_pass up
+		<where>
+			<if test="nickname != null and nickname != ''">
+				AND up.user_nickname LIKE '%' || #{nickname} || '%'
+			</if>
+			<if test="handle != null and handle != ''">
+				AND up.user_handle LIKE '%' || #{handle} || '%'
+			</if>
+			<if test="status != null and status != ''">
+				AND up.status = #{status}
+			</if>
+			<if test="createdFrom != null and createdFrom != ''">
+				AND up.created_at &gt;= TO_DATE(#{createdFrom},
+				'YYYY-MM-DD')
+			</if>
+			<if test="createdTo != null and createdTo != ''">
+				AND up.created_at &lt; TO_DATE(#{createdTo},
+				'YYYY-MM-DD') + 1
+			</if>
+		</where>
+		<include refid="passOrderBy" />
+		) inner_q
+		WHERE ROWNUM &lt;= #{offset} + #{size}
+		)
+		WHERE rn &gt;
+		#{offset}
+	</select>
+
+	<select id="countPasses"
+		parameterType="org.hati.admin.payment.domain.PassSearchRequest"
+		resultType="int">
+		SELECT COUNT(*)
+		FROM vw_user_pass up
+		<where>
+			<if test="nickname != null and nickname != ''">
+				AND up.user_nickname LIKE '%' || #{nickname} || '%'
+			</if>
+			<if test="handle != null and handle != ''">
+				AND up.user_handle LIKE '%' || #{handle} || '%'
+			</if>
+			<if test="status != null and status != ''">
+				AND up.status = #{status}
+			</if>
+			<if test="createdFrom != null and createdFrom != ''">
+				AND up.created_at &gt;= TO_DATE(#{createdFrom},
+				'YYYY-MM-DD')
+			</if>
+			<if test="createdTo != null and createdTo != ''">
+				AND up.created_at &lt; TO_DATE(#{createdTo},
+				'YYYY-MM-DD') + 1
+			</if>
+		</where>
+	</select>
+
+	<select id="findPassDetail"
+		resultType="org.hati.admin.payment.domain.PassDetailDTO">
+		SELECT
+		up.pass_id AS passId,
+		up.user_account_id AS
+		userAccountId,
+		up.user_profile_image_url AS userProfileImageUrl,
+		up.user_nickname AS nickname,
+		up.user_handle AS handle,
+		'USER' AS
+		roleType,
+		up.trainer_account_id AS trainerAccountId,
+		up.trainer_profile_image_url AS trainerProfileImageUrl,
+		up.trainer_nickname AS trainerNickname,
+		up.trainer_handle AS
+		trainerHandle,
+		'TRAINER' AS trainerRoleType,
+		up.status,
+		up.total_count_snapshot AS totalCountSnapshot,
+		up.remaining_count AS
+		remainingCount,
+		up.base_fee_snapshot AS baseFeeSnapshot,
+		up.price_snapshot AS priceSnapshot,
+		TO_CHAR(up.created_at, 'YYYY-MM-DD
+		HH24:MI:SS') AS createdAt
+		FROM vw_user_pass up
+		WHERE up.pass_id =
+		#{passId}
+	</select>
+
+	<select id="findPassUsageHistories"
+		resultType="org.hati.admin.payment.domain.PassUsageHistoryDTO">
+		SELECT
+		usage_id AS usageId,
+		reservation_id AS reservationId,
+		status AS reservationStatus,
+		center_name AS centerName,
+		TO_CHAR(slot_date, 'YYYY-MM-DD') AS slotDate,
+		TO_CHAR(reservation_start_time, 'YYYY-MM-DD HH24:MI:SS') AS
+		reservationStartTime,
+		TO_CHAR(reservation_end_time, 'YYYY-MM-DD
+		HH24:MI:SS') AS
+		reservationEndTime,
+		counts_snapshot AS countsSnapshot,
+		reason,
+		TO_CHAR(used_at, 'YYYY-MM-DD HH24:MI:SS') AS usedAt
+		FROM
+		vw_pass_usage_history
+		WHERE pass_id = #{passId}
+		ORDER BY used_at DESC
+	</select>
+
+	<!-- 결제 목록/상세/환불 -->
+	<select id="findPayments"
+		parameterType="org.hati.admin.payment.domain.PaymentSearchRequest"
+		resultType="org.hati.admin.payment.domain.PaymentListItemDTO">
+		SELECT * FROM (
+		SELECT inner_q.*, ROWNUM rn
+		FROM (
+		SELECT
+		p.payment_id AS
+		paymentId,
+		p.account_id AS accountId,
+		ad.nickname,
+		ad.handle,
+		ad.role_type AS roleType,
+		p.status,
+		TO_CHAR(p.created_at, 'YYYY-MM-DD
+		HH24:MI:SS') AS createdAt
+		FROM payment p
+		JOIN vw_account_display ad
+		ON
+		p.account_id = ad.account_id
+		<where>
+			<if test="nickname != null and nickname != ''">
+				AND ad.nickname LIKE '%' || #{nickname} || '%'
+			</if>
+			<if test="handle != null and handle != ''">
+				AND ad.handle LIKE '%' || #{handle} || '%'
+			</if>
+			<if test="status != null and status != ''">
+				AND p.status = #{status}
+			</if>
+			<if test="createdFrom != null and createdFrom != ''">
+				AND p.created_at &gt;= TO_DATE(#{createdFrom},
+				'YYYY-MM-DD')
+			</if>
+			<if test="createdTo != null and createdTo != ''">
+				AND p.created_at &lt; TO_DATE(#{createdTo}, 'YYYY-MM-DD')
+				+ 1
+			</if>
+		</where>
+		<include refid="paymentOrderBy" />
+		) inner_q
+		WHERE ROWNUM &lt;= #{offset} + #{size}
+		)
+		WHERE rn &gt;
+		#{offset}
+	</select>
+
+	<select id="countPayments"
+		parameterType="org.hati.admin.payment.domain.PaymentSearchRequest"
+		resultType="int">
+		SELECT COUNT(*)
+		FROM payment p
+		JOIN vw_account_display ad
+		ON p.account_id
+		= ad.account_id
+		<where>
+			<if test="nickname != null and nickname != ''">
+				AND ad.nickname LIKE '%' || #{nickname} || '%'
+			</if>
+			<if test="handle != null and handle != ''">
+				AND ad.handle LIKE '%' || #{handle} || '%'
+			</if>
+			<if test="status != null and status != ''">
+				AND p.status = #{status}
+			</if>
+			<if test="createdFrom != null and createdFrom != ''">
+				AND p.created_at &gt;= TO_DATE(#{createdFrom},
+				'YYYY-MM-DD')
+			</if>
+			<if test="createdTo != null and createdTo != ''">
+				AND p.created_at &lt; TO_DATE(#{createdTo}, 'YYYY-MM-DD')
+				+ 1
+			</if>
+		</where>
+	</select>
+
+	<select id="findPaymentDetail"
+		resultType="org.hati.admin.payment.domain.PaymentDetailDTO">
+		SELECT
+		p.payment_id AS paymentId,
+		p.account_id AS accountId,
+		ad.nickname,
+		ad.handle,
+		ad.role_type AS roleType,
+		p.status,
+		p.reservation_id AS reservationId,
+		TO_CHAR(p.created_at, 'YYYY-MM-DD
+		HH24:MI:SS') AS createdAt,
+		p.original_amount AS originalAmount,
+		p.discount_amount AS discountAmount,
+		p.final_amount AS finalAmount,
+		TO_CHAR(p.paid_at, 'YYYY-MM-DD HH24:MI:SS') AS paidAt,
+		TO_CHAR(p.expire_at, 'YYYY-MM-DD HH24:MI:SS') AS expireAt,
+		p.kakao_tid
+		AS kakaoTid,
+		vr.center_name AS centerName,
+		TO_CHAR(vr.slot_date,
+		'YYYY-MM-DD') AS slotDate,
+		TO_CHAR(vr.reservation_start_time,
+		'YYYY-MM-DD HH24:MI:SS') AS reservationStartTime,
+		TO_CHAR(vr.reservation_end_time, 'YYYY-MM-DD HH24:MI:SS') AS
+		reservationEndTime,
+		vr.reservation_status AS reservationStatus
+		FROM
+		payment p
+		JOIN vw_account_display ad
+		ON p.account_id = ad.account_id
+		LEFT JOIN vw_reservations_payment vr
+		ON p.payment_id = vr.payment_id
+		WHERE p.payment_id = #{paymentId}
+	</select>
+
+	<update id="refundPayment">
+		UPDATE payment
+		SET status = 'REFUNDED'
+		WHERE payment_id
+		= #{paymentId}
+		AND status = 'PAID'
+	</update>
+
+	<update id="cancelReservationByPayment">
+		UPDATE room_reservation
+		SET status = 'CANCELLED'
+		WHERE
+		reservation_id = (
+		SELECT reservation_id
+		FROM payment
+		WHERE payment_id =
+		#{paymentId}
+		)
+	</update>
+
+	<!-- 매출 조회 -->
+	<select id="findCenterNames" resultType="string">
+		SELECT center_name
+		FROM centers
+		ORDER BY center_name
+	</select>
+
+	<select id="findRevenueByDay"
+		resultType="org.hati.admin.payment.domain.RevenuePointDTO">
+		SELECT
+		TO_CHAR(p.paid_at, 'DD') AS label,
+		NVL(SUM(p.final_amount), 0) AS amount
+		FROM payment p
+		JOIN vw_reservations_payment vr
+		ON p.payment_id = vr.payment_id
+		WHERE p.status = 'PAID'
+		AND TO_CHAR(p.paid_at, 'YYYY-MM') = TO_CHAR(TO_DATE(#{baseDate},
+		'YYYY-MM-DD'), 'YYYY-MM')
+		<if test="centerName != null and centerName != ''">
+			AND vr.center_name = #{centerName}
+		</if>
+		GROUP BY TO_CHAR(p.paid_at, 'DD')
+		ORDER BY label
+	</select>
+
+	<select id="findRevenueByMonth"
+		resultType="org.hati.admin.payment.domain.RevenuePointDTO">
+		SELECT
+		TO_CHAR(p.paid_at, 'MM') AS label,
+		NVL(SUM(p.final_amount), 0) AS amount
+		FROM payment p
+		JOIN vw_reservations_payment vr
+		ON p.payment_id = vr.payment_id
+		WHERE p.status = 'PAID'
+		AND TO_CHAR(p.paid_at, 'YYYY') = TO_CHAR(TO_DATE(#{baseDate},
+		'YYYY-MM-DD'), 'YYYY')
+		<if test="centerName != null and centerName != ''">
+			AND vr.center_name = #{centerName}
+		</if>
+		GROUP BY TO_CHAR(p.paid_at, 'MM')
+		ORDER BY label
+	</select>
+
+	<select id="findRevenueByQuarter"
+		resultType="org.hati.admin.payment.domain.RevenuePointDTO">
+		SELECT
+		'Q' || TO_CHAR(p.paid_at, 'Q') AS label,
+		NVL(SUM(p.final_amount), 0) AS amount
+		FROM payment p
+		JOIN vw_reservations_payment vr
+		ON p.payment_id = vr.payment_id
+		WHERE p.status = 'PAID'
+		AND TO_CHAR(p.paid_at, 'YYYY') = TO_CHAR(TO_DATE(#{baseDate},
+		'YYYY-MM-DD'), 'YYYY')
+		<if test="centerName != null and centerName != ''">
+			AND vr.center_name = #{centerName}
+		</if>
+		GROUP BY TO_CHAR(p.paid_at, 'Q')
+		ORDER BY label
+	</select>
+
+	<select id="findRevenueByYear"
+		resultType="org.hati.admin.payment.domain.RevenuePointDTO">
+		SELECT
+		TO_CHAR(p.paid_at, 'YYYY') AS label,
+		NVL(SUM(p.final_amount), 0) AS amount
+		FROM payment p
+		JOIN vw_reservations_payment vr
+		ON p.payment_id = vr.payment_id
+		WHERE p.status = 'PAID'
+		<if test="centerName != null and centerName != ''">
+			AND vr.center_name = #{centerName}
+		</if>
+		GROUP BY TO_CHAR(p.paid_at, 'YYYY')
+		ORDER BY label
+	</select>
+</mapper>

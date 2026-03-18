@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.hati.trainer.mapper.TrainerMapper">
+
+  <!-- =========================
+       ResultMap
+  ========================== -->
+  <resultMap id="trainerSummaryMap" type="org.hati.trainer.vo.TrainerSummaryVO">
+    <id     property="trainerAccountId" column="trainer_account_id"/>
+
+    <result property="name"          column="name"/>
+    <result property="region"        column="region"/>
+    <result property="gender"        column="gender"/>
+    <result property="hatiCode"      column="hati_code"/>
+
+	<result property="intro" 		 column="intro"/>
+    <result property="profileImage"  column="profile_image"/>
+
+    <result property="price"         column="price"/>
+    <result property="totalCount"    column="total_count"/>
+    <result property="bookmarkCount" column="bookmark_count"/>
+    <result property="bookmarked"    column="bookmarked"/>
+  </resultMap>
+
+
+
+  <!-- =========================
+       공통: Trainer 카드에 필요한 컬럼 셋
+       (accounts + user_profile + profile image + min price + bookmark count + bookmarked)
+  ========================== -->
+  <sql id="trainerCardSelectCols">
+    a.account_id AS trainer_account_id,
+    a.name       AS name,
+    a.region     AS region,
+    u.gender     AS gender,
+    u.hati_code  AS hati_code,
+
+	u.intro      AS intro,
+    mf.url       AS profile_image,
+
+     tpp.price    AS price,
+     tpp.total_count AS total_count,
+     
+    NVL(tb.cnt, 0)        AS bookmark_count,
+
+    CASE
+	  WHEN tb_me.trainer_account_id IS NOT NULL THEN 1
+	  ELSE 0
+	END AS bookmarked
+  </sql>
+
+  <!-- =========================
+       공통: Trainer 카드 조인
+  ========================== -->
+  <sql id="trainerCardJoins">
+    FROM accounts a
+    JOIN user_profile u
+      ON u.account_id = a.account_id
+
+    LEFT JOIN trainer_pass_product tpp    
+    ON tpp.account_id = a.account_id
+
+    LEFT JOIN (
+      SELECT trainer_account_id, COUNT(*) AS cnt
+      FROM trainer_booking
+      GROUP BY trainer_account_id
+    ) tb
+      ON tb.trainer_account_id = a.account_id
+
+   <!-- ✅ loginAccountId 있을 때만 tb_me 조인 -->
+	  <if test="loginAccountId != null">
+		  LEFT JOIN (
+		    SELECT trainer_account_id
+		    FROM trainer_booking
+		    WHERE user_account_id = #{loginAccountId}
+		    GROUP BY trainer_account_id
+		  ) tb_me
+		    ON tb_me.trainer_account_id = a.account_id
+		</if>
+
+    LEFT JOIN (
+	  SELECT ref_id, url
+	  FROM (
+	    SELECT
+	      ref_id,
+	      url,
+	      ROW_NUMBER() OVER (
+	        PARTITION BY ref_id
+	        ORDER BY created_at DESC
+	      ) rn
+	    FROM media_files
+	    WHERE ref_type = 'PROFILE'
+	  )
+	  WHERE rn = 1
+	) mf
+	  ON mf.ref_id = a.account_id
+  </sql>
+
+  <!-- =========================
+       공통: Trainer 기본 조건(승인된 트레이너만)
+  ========================== -->
+  <sql id="trainerBaseWhere">
+    a.role_type = 'TRAINER'
+    AND a.status = 'ACTIVE'
+    AND u.verification_status = 'APPROVED'
+  </sql>
+
+  <!-- =========================
+       공통: 검색/필터 조건
+       - keyword / hatiTypes / regions / gender / bookmarkedOnly
+  ========================== -->
+  <sql id="trainerFilters">
+    <!-- keyword -->
+    <if test="keyword != null and keyword != ''">
+      AND (
+        LOWER(a.name || ' 트레이너') LIKE '%' || LOWER(#{keyword}) || '%'
+        OR a.region LIKE '%' || #{keyword} || '%'
+        OR LOWER(u.nickname) LIKE '%' || LOWER(#{keyword}) || '%'
+        OR LOWER(u.handle) LIKE '%' || LOWER(#{keyword}) || '%'
+        OR u.hati_code LIKE '%' || #{keyword} || '%'
+        OR LOWER(u.intro) LIKE '%' || LOWER(#{keyword}) || '%'
+      )
+    </if>
+
+    <!-- hatiTypes -->
+    <if test="hatiTypes != null and hatiTypes.size() > 0">
+      AND u.hati_code IN
+      <foreach collection="hatiTypes" item="h" open="(" close=")" separator=",">
+        #{h}
+      </foreach>
+    </if>
+
+    <!-- regions -->
+    <if test="regions != null and regions.size() > 0">
+      AND a.region IN
+      <foreach collection="regions" item="r" open="(" close=")" separator=",">
+        #{r}
+      </foreach>
+    </if>
+
+    <!-- gender -->
+    <if test="gender != null and gender != '' and gender != 'ALL'">
+      AND u.gender = #{gender}
+    </if>
+
+    <!-- bookmarkedOnly -->
+    <if test="bookmarkedOnly == true">
+      AND tb_me.trainer_account_id IS NOT NULL
+    </if>
+  </sql>
+
+  <!-- ============================================================
+       1) 검색 전 : 인기 트레이너
+       - 기본: 찜 수 DESC
+       - popularPeriod가 있으면 기간별 찜 수로 SCORE 계산해서 정렬
+       - offset/limit 적용(무한스크롤 가능)
+  ============================================================ -->
+  <select id="selectPopularTrainers"
+          parameterType="org.hati.trainer.vo.TrainerSearchConditionVO"
+          resultMap="trainerSummaryMap">
+
+    SELECT *
+    FROM (
+      SELECT
+        t.*,
+        ROW_NUMBER() OVER (ORDER BY t.score DESC, t.bookmark_count DESC, t.trainer_account_id DESC) rn
+      FROM (
+        SELECT
+          <include refid="trainerCardSelectCols"/>,
+
+          <!-- 기간별 추천 점수 -->
+          <choose>
+           <!-- ✅ 1) 추천순(recommend) = 맞춤 점수 -->
+			  <when test="sort == 'recommend'">
+			    (
+			      /* 기본 인기 조금 */
+			      NVL(tb.cnt, 0)
+			      +
+			      /* HATI 같으면 +100 */
+			      (CASE
+			        WHEN #{loginAccountId} IS NOT NULL
+			         AND u.hati_code = (SELECT u2.hati_code FROM user_profile u2 WHERE u2.account_id = #{loginAccountId})
+			        THEN 100 ELSE 0
+			      END)
+			      +
+			      /* 지역 같으면 +50 */
+			      (CASE
+			        WHEN #{loginAccountId} IS NOT NULL
+			         AND a.region = (SELECT a2.region FROM accounts a2 WHERE a2.account_id = #{loginAccountId})
+			        THEN 50 ELSE 0
+			      END)
+			    )
+			  </when>
+			
+			  <!-- ✅ 2) 인기순(popular) + 기간옵션 = 기간 찜 수 -->
+			  <when test="sort == 'popular' and popularPeriod == 'week'">
+			    (SELECT COUNT(*) FROM trainer_booking x
+			      WHERE x.trainer_account_id = a.account_id
+			        AND x.created_at >= SYSDATE - 7)
+			  </when>
+			  <when test="sort == 'popular' and popularPeriod == 'month'">
+			    (SELECT COUNT(*) FROM trainer_booking x
+			      WHERE x.trainer_account_id = a.account_id
+			        AND x.created_at >= ADD_MONTHS(SYSDATE, -1))
+			  </when>
+			  <when test="sort == 'popular' and popularPeriod == 'year'">
+			    (SELECT COUNT(*) FROM trainer_booking x
+			      WHERE x.trainer_account_id = a.account_id
+			        AND x.created_at >= ADD_MONTHS(SYSDATE, -12))
+			  </when>
+			
+			  <!-- ✅ 기본 인기(누적) -->
+			  <otherwise>
+			    NVL(tb.cnt, 0)
+			  </otherwise>
+          </choose> AS score
+          <include refid="trainerCardJoins"/>
+        WHERE <include refid="trainerBaseWhere"/>
+      		<include refid="trainerFilters"/>
+      ) t
+    )
+    WHERE rn &gt; #{offset}
+      AND rn &lt;= #{offset} + #{limit}
+
+  </select>
+
+  <!-- ============================================================
+       2) 검색 전 : 맞춤 트레이너
+       - loginAccountId의 (hati_code + region)과 같은 트레이너
+       - loginAccountId 없으면 0명 반환
+       - 정렬: 찜 수 DESC
+  ============================================================ -->
+  <select id="selectMatchedTrainers"
+          parameterType="org.hati.trainer.vo.TrainerSearchConditionVO"
+          resultMap="trainerSummaryMap">
+
+    SELECT
+      <include refid="trainerCardSelectCols"/>
+    <include refid="trainerCardJoins"/>
+    WHERE <include refid="trainerBaseWhere"/>
+
+      <if test="loginAccountId != null">
+        AND u.hati_code = (
+          SELECT u2.hati_code
+          FROM user_profile u2
+          WHERE u2.account_id = #{loginAccountId}
+        )
+        AND a.region = (
+          SELECT a2.region
+          FROM accounts a2
+          WHERE a2.account_id = #{loginAccountId}
+        )
+      </if>
+
+      <if test="loginAccountId == null">
+        AND 1 = 0
+      </if>
+
+    ORDER BY bookmark_count DESC, trainer_account_id DESC
+
+  </select>
+
+  <!-- ============================================================
+       3) 검색 후 : 필터 + 무한스크롤
+       - priceOrder low/high 지원
+       - 기본 정렬: (찜 수 DESC) + 최신
+  ============================================================ -->
+  <select id="selectTrainerList"
+          parameterType="org.hati.trainer.vo.TrainerSearchConditionVO"
+          resultMap="trainerSummaryMap">
+
+    SELECT *
+    FROM (
+      SELECT
+        t.*,
+        ROW_NUMBER() OVER (
+          <choose>
+            <when test="priceOrder != null and priceOrder == 'low'">
+              ORDER BY 
+	              CASE WHEN t.price IS NULL THEN 1 ELSE 0 END,
+	              t.price ASC, 
+	              t.bookmark_count DESC, 
+	              t.trainer_account_id DESC
+            </when>
+            <when test="priceOrder != null and priceOrder == 'high'">
+              ORDER BY 
+	              CASE WHEN t.price IS NULL THEN 1 ELSE 0 END,
+	              t.price DESC, 
+	              t.bookmark_count DESC, 
+	              t.trainer_account_id DESC
+            </when>
+            <otherwise>
+              ORDER BY t.bookmark_count DESC, t.trainer_account_id DESC
+            </otherwise>
+          </choose>
+        ) rn
+      FROM (
+        SELECT
+          <include refid="trainerCardSelectCols"/>,
+          
+          <!-- ✅ 인기순 기간 점수(찜수) : sort=popular일 때만 ORDER BY에서 사용됨 -->
+        <choose>
+          <when test="popularPeriod == 'week'">
+            (SELECT COUNT(*) FROM trainer_booking x
+              WHERE x.trainer_account_id = a.account_id
+                AND x.created_at >= SYSDATE - 7)
+          </when>
+          <when test="popularPeriod == 'month'">
+            (SELECT COUNT(*) FROM trainer_booking x
+              WHERE x.trainer_account_id = a.account_id
+                AND x.created_at >= ADD_MONTHS(SYSDATE, -1))
+          </when>
+          <when test="popularPeriod == 'year'">
+            (SELECT COUNT(*) FROM trainer_booking x
+              WHERE x.trainer_account_id = a.account_id
+                AND x.created_at >= ADD_MONTHS(SYSDATE, -12))
+          </when>
+          <otherwise>
+            NVL(tb.cnt, 0)
+          </otherwise>
+        </choose> AS popular_count
+        
+        <include refid="trainerCardJoins"/>
+        WHERE <include refid="trainerBaseWhere"/>
+          <include refid="trainerFilters"/>
+      ) t
+    )
+    WHERE rn &gt; #{offset}
+      AND rn &lt;= #{offset} + #{limit}
+
+  </select>
+
+
+	<!-- ============================================================
+     4) 검색 결과 전체 개수 (페이징용)
+	============================================================ -->
+	<select id="countTrainerList"
+	        parameterType="org.hati.trainer.vo.TrainerSearchConditionVO"
+	        resultType="int">
+	
+	  SELECT COUNT(*)
+	  <include refid="trainerCardJoins"/>
+	  WHERE <include refid="trainerBaseWhere"/>
+	    <include refid="trainerFilters"/>
+	
+	</select>
+
+
+</mapper>

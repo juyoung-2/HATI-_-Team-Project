@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.hati.comment.mapper.CommentMapper">
+
+  <!-- =========================
+       댓글 목록
+       - deleted=0만
+       - 작성자 표시정보 + hati_code 포함
+       - reply_like(작성자 하트) 그대로 내려줌
+       ========================= -->
+  <select id="selectByPostId" resultType="org.hati.comment.vo.CommentVO">
+	  SELECT * FROM (
+	    SELECT inner_q.*, ROW_NUMBER() OVER (ORDER BY
+	      CASE WHEN inner_q.replyPin = 1 THEN 0 ELSE 1 END ASC,
+	      inner_q.createdAtStr ASC
+	    ) AS rn
+	    FROM (
+	      SELECT
+	        c.comment_id AS commentId,
+	        c.post_id    AS postId,
+	        c.account_id AS accountId,
+	        c.content    AS content,
+	        c.reply_pin  AS replyPin,
+	        TO_CHAR(c.created_at, 'YYYY-MM-DD HH24:MI') AS createdAtStr,
+	        up.nickname AS writerDisplayName,
+	        up.handle   AS writerHandle,
+	        up.hati_code AS writerHatiCode,
+	        (SELECT mf.url FROM SCOTT.media_files mf
+	          WHERE mf.ref_type = 'PROFILE'
+	            AND mf.ref_id = c.account_id
+	            AND ROWNUM = 1) AS writerAvatarUrl,
+	        c.reply_like AS writerLiked,
+	        c.reply_like AS likeCount
+	      FROM SCOTT.comments c
+	      LEFT JOIN SCOTT.user_profile up ON up.account_id = c.account_id
+	      WHERE c.post_id = #{postId, jdbcType=NUMERIC}
+	        AND c.deleted = 0
+	    ) inner_q
+	  )
+	  WHERE rn BETWEEN (#{offset} + 1) AND (#{offset} + #{limit})
+	</select>
+	
+	<select id="countByPostId" resultType="int">
+	  SELECT COUNT(*)
+	  FROM SCOTT.comments
+	  WHERE post_id = #{postId, jdbcType=NUMERIC}
+	    AND deleted = 0
+	</select>
+
+  <!-- =========================
+       댓글 작성
+       - comment_id는 트리거가 채움
+       ========================= -->
+	<insert id="insert" parameterType="org.hati.comment.vo.CommentVO">
+	  <selectKey keyProperty="commentId" resultType="long" order="BEFORE">
+	    SELECT SCOTT.SEQ_COMMENTS.NEXTVAL FROM dual
+	  </selectKey>
+	  INSERT INTO SCOTT.comments (
+	    comment_id, account_id, post_id, content, created_at,
+	    reply_pin, reply_like, deleted
+	  ) VALUES (
+	    #{commentId, jdbcType=NUMERIC},
+	    #{accountId, jdbcType=NUMERIC},
+	    #{postId, jdbcType=NUMERIC},
+	    #{content, jdbcType=VARCHAR},
+	    SYSDATE,
+	    0, 0, 0
+	  )
+	</insert>
+	
+  <!-- =========================
+       댓글 삭제(소프트)
+       - 본인만
+       ========================= -->
+  <update id="softDelete">
+    UPDATE SCOTT.comments
+    SET deleted = 1
+    WHERE comment_id = #{commentId, jdbcType=NUMERIC}
+      AND account_id = #{accountId, jdbcType=NUMERIC}
+      AND deleted = 0
+  </update>
+
+  <!-- 게시글 작성자 -->
+  <select id="selectPostWriterId" resultType="java.lang.Long">
+    SELECT p.account_id
+    FROM SCOTT.posts p
+    WHERE p.post_id = #{postId, jdbcType=NUMERIC}
+  </select>
+
+  <!-- 댓글이 달린 게시글 작성자 -->
+  <select id="selectPostWriterIdByCommentId" resultType="java.lang.Long">
+    SELECT p.account_id
+    FROM SCOTT.comments c
+    JOIN SCOTT.posts p ON p.post_id = c.post_id
+    WHERE c.comment_id = #{commentId, jdbcType=NUMERIC}
+  </select>
+
+  <!-- 작성자 하트 토글 -->
+  <update id="toggleWriterLike">
+    UPDATE SCOTT.comments
+    SET reply_like =
+      CASE WHEN reply_like = 1 THEN 0 ELSE 1 END
+    WHERE comment_id = #{commentId, jdbcType=NUMERIC}
+      AND deleted = 0
+  </update>
+
+  <select id="selectWriterLiked" resultType="java.lang.Integer">
+    SELECT reply_like
+    FROM SCOTT.comments
+    WHERE comment_id = #{commentId, jdbcType=NUMERIC}
+  </select>
+  
+  <!-- =========================
+       댓글 수정
+       - 본인만 가능
+       ========================= -->
+	<update id="update">
+	  UPDATE SCOTT.comments
+	     SET content = #{content, jdbcType=VARCHAR}
+	   WHERE comment_id = #{commentId, jdbcType=NUMERIC}
+	     AND account_id = #{accountId, jdbcType=NUMERIC}
+	     AND deleted = 0
+	</update>
+	
+  <!-- =========================
+       댓글 고정
+       - 게시글 작성자만 가능
+       ========================= -->
+	<update id="unpinAll">
+	  UPDATE SCOTT.comments
+	  SET reply_pin = 0
+	  WHERE post_id = (SELECT post_id FROM SCOTT.comments WHERE comment_id = #{commentId})
+	    AND reply_pin = 1
+	</update>
+	
+	<update id="pin">
+	  UPDATE SCOTT.comments SET reply_pin = #{pin} WHERE comment_id = #{commentId}
+	</update>
+       
+</mapper>

@@ -1,0 +1,372 @@
+/* ===== layout ===== */
+.admin-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+.admin-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.admin-tab {
+  border: 1px solid #ddd;
+  background: #fff;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.admin-tab.active {
+  border-color: #222;
+  font-weight: 700;
+}
+
+/* ===== common blocks ===== */
+.admin-section {
+  display: block;
+}
+
+.admin-card {
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 14px;
+  background: #fff;
+}
+
+.admin-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.admin-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-field label {
+  font-size: 12px;
+  color: #555;
+}
+
+.admin-input,
+.admin-select {
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  outline: none;
+}
+
+.admin-input:focus,
+.admin-select:focus {
+  border-color: #222;
+}
+
+.admin-btn {
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid #222;
+  background: #222;
+  color: #fff;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.admin-btn.secondary {
+  background: #fff;
+  color: #222;
+  border-color: #ddd;
+}
+
+.admin-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.admin-summary {
+  margin: 12px 0 8px;
+  color: #333;
+}
+
+/* ===== table ===== */
+.admin-table-wrap {
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-table thead tr {
+  background: #f7f7f7;
+}
+
+.admin-table th,
+.admin-table td {
+  text-align: left;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.admin-table tbody tr:hover {
+  background: #fafafa;
+}
+
+.admin-empty {
+  padding: 12px;
+  color: #666;
+}
+
+.admin-error {
+  padding: 12px;
+  color: #c00;
+}
+
+/* ===== paging ===== */
+.admin-paging {
+  margin-top: 12px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.admin-page-btn {
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.admin-page-btn.active {
+  border-color: #222;
+  font-weight: 700;
+}
+
+.admin-page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== modal ===== */
+.admin-modal-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  z-index: 9999;
+}
+
+.admin-modal-backdrop.open {
+  display: block;
+}
+
+.admin-modal {
+  width: min(920px, 94vw);
+  margin: 6vh auto;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.admin-modal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  border-bottom: 1px solid #eee;
+}
+
+.admin-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-modal-sub {
+  color: #666;
+}
+
+.admin-modal-tabs {
+  padding: 10px 14px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  gap: 8px;
+}
+
+.admin-modal-tab {
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.admin-modal-tab.active {
+  border-color: #222;
+  font-weight: 700;
+}
+
+.admin-modal-body {
+  padding: 14px;
+  max-height: 70vh;
+  overflow: auto;
+}
+
+.admin-kv {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 8px 12px;
+}
+
+.admin-k {
+  color: #666;
+}
+
+.admin-hr {
+  margin: 14px 0;
+  border: 0;
+  border-top: 1px solid #eee;
+}
+
+.admin-h4 {
+  margin: 0 0 10px;
+}
+
+/* ===== 관리자 상세: 프로필 헤더 ===== */
+.admin-profile-header {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #eee;
+  margin-bottom: 14px;
+}
+
+.admin-banner {
+  height: 160px;
+  background: #cfcfd3;
+}
+
+.admin-banner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.admin-banner-fallback {
+  width: 100%;
+  height: 100%;
+  background: #cfcfd3;
+}
+
+/* 프로필 원형 이미지 */
+.admin-avatar {
+  position: absolute;
+  left: 18px;
+  top: 110px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 4px solid #fff;
+  background: #fff;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+}
+
+.admin-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.admin-avatar-fallback {
+  width: 100%;
+  height: 100%;
+  background: #f1f3f5;
+}
+
+/* 닉네임/핸들 영역 */
+.admin-profile-meta {
+  padding: 18px 18px 16px 156px; /* 아바타 공간 확보 */
+  background: #fff;
+}
+
+.admin-profile-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+}
+
+.admin-profile-handle {
+  margin-top: 6px;
+  color: #666;
+}
+
+/* 배지(권한/상태) */
+.admin-badge {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #f3f5f7;
+  color: #222;
+}
+
+.admin-badge.secondary {
+  background: #eef2ff;
+  color: #2d74da;
+}
+
+/* ===== modal panes (JS가 active로 토글) ===== */
+.modal-pane { display:none; }
+.modal-pane.active { display:block; }
+
+/* ===== 신고/정지 카드 ===== */
+.report-card, .susp-card {
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 12px;
+  background: #fff;
+  margin-bottom: 10px;
+}
+
+.report-head {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.report-meta {
+  color: #666;
+  font-size: 12px;
+}
+
+.report-body {
+  margin-top: 8px;
+  white-space: pre-wrap;
+}
+
+.suspend-form {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #eee;
+}

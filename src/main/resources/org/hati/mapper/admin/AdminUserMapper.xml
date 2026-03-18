@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.hati.admin.mapper.AdminUserMapper">
+
+	<!-- 목록 total -->
+	<select id="countUsers"
+		parameterType="org.hati.admin.user.domain.AdminUserSearchRequest"
+		resultType="int">
+		SELECT COUNT(*)
+		FROM accounts a
+		JOIN vw_account_display d ON
+		a.account_id = d.account_id
+		<where>
+			<if test="nickname != null and nickname != ''">
+				AND d.nickname LIKE '%' || #{nickname} || '%'
+			</if>
+			<if test="handle != null and handle != ''">
+				AND d.handle LIKE '%' || #{handle} || '%'
+			</if>
+			<if test="roleType != null and roleType != ''">
+				AND a.role_type = #{roleType}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="createdFrom != null and createdFrom != ''">
+				AND a.created_at &gt;= TO_DATE(#{createdFrom},
+				'YYYY-MM-DD')
+			</if>
+			<if test="createdTo != null and createdTo != ''">
+				AND a.created_at &lt; TO_DATE(#{createdTo}, 'YYYY-MM-DD')
+				+ 1
+			</if>
+
+			<!-- 신고 받은 사용자 관리: reports.status=0 존재하는 유저만 -->
+			<if test="onlyReported == true">
+				AND EXISTS (
+				SELECT 1 FROM reports r
+				WHERE
+				r.target_account_id = a.account_id
+				AND r.status = 0
+				)
+			</if>
+		</where>
+	</select>
+
+	<!-- 목록 -->
+	<select id="selectUsers"
+		parameterType="org.hati.admin.user.domain.AdminUserSearchRequest"
+		resultType="org.hati.admin.user.domain.AdminUserListItemDTO">
+		SELECT *
+		FROM (
+		SELECT
+		a.account_id AS accountId,
+		d.nickname AS nickname,
+		d.handle AS handle,
+		a.role_type AS roleType,
+		a.status AS status,
+		TO_CHAR(a.created_at, 'YYYY-MM-DD HH24:MI:SS') AS createdAt,
+		ROW_NUMBER() OVER (
+		ORDER BY
+		<choose>
+			<when test="sort == 'createdAtAsc'"> a.created_at ASC </when>
+			<otherwise> a.created_at DESC </otherwise>
+		</choose>
+		) rn
+		FROM accounts a
+		JOIN vw_account_display d ON a.account_id =
+		d.account_id
+		<where>
+			<if test="nickname != null and nickname != ''">
+				AND d.nickname LIKE '%' || #{nickname} || '%'
+			</if>
+			<if test="handle != null and handle != ''">
+				AND d.handle LIKE '%' || #{handle} || '%'
+			</if>
+			<if test="roleType != null and roleType != ''">
+				AND a.role_type = #{roleType}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="createdFrom != null and createdFrom != ''">
+				AND a.created_at &gt;= TO_DATE(#{createdFrom},
+				'YYYY-MM-DD')
+			</if>
+			<if test="createdTo != null and createdTo != ''">
+				AND a.created_at &lt; TO_DATE(#{createdTo}, 'YYYY-MM-DD')
+				+ 1
+			</if>
+
+			<if test="onlyReported == true">
+				AND EXISTS (
+				SELECT 1 FROM reports r
+				WHERE
+				r.target_account_id = a.account_id
+				AND r.status = 0
+				)
+			</if>
+		</where>
+		)
+		WHERE rn BETWEEN (#{page}-1)*#{size}+1 AND #{page}*#{size}
+	</select>
+
+	<!-- 상세 -->
+	<select id="selectUserDetail" parameterType="long"
+		resultType="org.hati.admin.user.domain.AdminUserDetailDTO">
+		SELECT
+		a.account_id AS accountId,
+		a.role_type AS roleType,
+		a.status AS status,
+		a.email AS email,
+		a.phone AS phone,
+		a.region AS region,
+		TO_CHAR(a.created_at, 'YYYY-MM-DD HH24:MI:SS') AS createdAt,
+
+		-- 표시용(유저/트레이너는 vw, 기업은 회사명)
+		CASE
+		WHEN a.role_type = 'BUSINESS' THEN bp.company_name
+		ELSE d.nickname
+		END AS nickname,
+
+		-- 기업 전용도 DTO에 따로 채워줌(원하면 화면에서 companyName을 따로 쓰기 쉬움)
+		bp.company_name AS companyName,
+
+		d.handle AS handle,
+
+		mp.url AS profileImageUrl,
+		mb.url AS bannerImageUrl,
+
+		-- user_profile (USER/TRAINER)
+		up.intro AS intro,
+		TO_CHAR(up.birth_date, 'YYYY-MM-DD') AS birthDate,
+		up.gender AS gender,
+		up.career_years AS careerYears,
+		up.account_number AS accountNumber,
+
+		-- 인증 관련: role에 따라 source 분기
+		CASE
+		WHEN a.role_type = 'BUSINESS' THEN bp.verification_status
+		ELSE up.verification_status
+		END AS verificationStatus,
+
+		CASE
+		WHEN a.role_type = 'BUSINESS' THEN TO_CHAR(bp.verified_at, 'YYYY-MM-DD
+		HH24:MI:SS')
+		ELSE TO_CHAR(up.verified_at, 'YYYY-MM-DD HH24:MI:SS')
+		END AS verifiedAt,
+
+		-- business only
+		bp.biz_reg_no AS bizRegNo
+
+		FROM accounts a
+		JOIN vw_account_display d ON a.account_id = d.account_id
+		LEFT JOIN user_profile up ON a.account_id = up.account_id
+		LEFT JOIN business_profile bp ON a.account_id = bp.account_id
+
+		LEFT JOIN media_files mp ON mp.ref_type='PROFILE' AND
+		mp.ref_id=a.account_id
+		LEFT JOIN media_files mb ON mb.ref_type='BANNER' AND
+		mb.ref_id=a.account_id
+
+		WHERE a.account_id = #{accountId}
+	</select>
+
+	<!-- 활동 요약 -->
+	<select id="countPostsByAccount" resultType="int">
+		SELECT COUNT(*) FROM
+		posts WHERE account_id = #{accountId}
+	</select>
+
+	<select id="countCommentsByAccount" resultType="int">
+		SELECT COUNT(*)
+		FROM comments WHERE account_id = #{accountId}
+	</select>
+
+	<select id="countTrainerReviewsByAccount" resultType="int">
+		SELECT
+		COUNT(*) FROM trainers_reviews WHERE user_account_id = #{accountId}
+	</select>
+
+	<select id="countReportsReceived" resultType="int">
+		SELECT COUNT(*)
+		FROM reports WHERE target_account_id = #{accountId}
+	</select>
+
+	<select id="countSuspensions" resultType="int">
+		SELECT COUNT(*) FROM
+		user_suspensions WHERE account_id = #{accountId}
+	</select>
+
+	<!-- 가입 승인 대기 -->
+	<select id="selectPendingUsers"
+		resultType="org.hati.admin.user.domain.AdminPendingUserListItemDTO">
+		SELECT
+		a.account_id AS accountId,
+		d.nickname AS nickname,
+		d.handle AS handle,
+		a.role_type AS roleType,
+		a.status AS status,
+		TO_CHAR(a.created_at, 'YYYY-MM-DD HH24:MI:SS') AS createdAt
+		FROM
+		accounts a
+		JOIN vw_account_display d ON a.account_id = d.account_id
+		WHERE a.status = 'PENDING'
+		AND a.role_type IN ('TRAINER','BUSINESS')
+		ORDER BY a.created_at DESC
+	</select>
+
+	<select id="selectRoleType" resultType="string">
+		SELECT role_type FROM
+		accounts WHERE account_id = #{accountId}
+	</select>
+
+	<update id="updateAccountStatus">
+		UPDATE accounts
+		SET status = #{status}
+		WHERE account_id
+		= #{accountId}
+	</update>
+
+	<!-- trainer 승인/거부: user_profile.verification_status/verified_at -->
+	<update id="approveTrainerProfile">
+		UPDATE user_profile
+		SET verification_status =
+		'APPROVED',
+		verified_at = SYSDATE
+		WHERE account_id = #{accountId}
+	</update>
+
+	<update id="rejectTrainerProfile">
+		UPDATE user_profile
+		SET verification_status =
+		'REJECTED',
+		verified_at = NULL
+		WHERE account_id = #{accountId}
+	</update>
+
+	<!-- business 승인/거부: business_profile.verification_status/verified_at -->
+	<update id="approveBusinessProfile">
+		UPDATE business_profile
+		SET verification_status =
+		'APPROVED',
+		verified_at = SYSDATE
+		WHERE account_id = #{accountId}
+	</update>
+
+	<update id="rejectBusinessProfile">
+		UPDATE business_profile
+		SET verification_status =
+		'REJECTED',
+		verified_at = NULL
+		WHERE account_id = #{accountId}
+	</update>
+
+	<update id="replaceUserIntroToDefault">
+		UPDATE user_profile
+		SET intro = '부적절한 내용이 포함되어있습니다.'
+		WHERE account_id = #{accountId}
+	</update>
+
+</mapper>

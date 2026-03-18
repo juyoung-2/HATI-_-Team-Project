@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.hati.bookmark.mapper.BookmarkMapper">
+
+  <select id="exists" resultType="int">
+    SELECT COUNT(*)
+    FROM SCOTT.post_bookmarks
+    WHERE account_id = #{accountId, jdbcType=NUMERIC}
+      AND post_id    = #{postId, jdbcType=NUMERIC}
+  </select>
+
+  <insert id="insert">
+    INSERT INTO SCOTT.post_bookmarks (account_id, post_id)
+    VALUES (#{accountId, jdbcType=NUMERIC}, #{postId, jdbcType=NUMERIC})
+  </insert>
+
+  <delete id="delete">
+    DELETE FROM SCOTT.post_bookmarks
+    WHERE account_id = #{accountId, jdbcType=NUMERIC}
+      AND post_id    = #{postId, jdbcType=NUMERIC}
+  </delete>
+
+  <!-- =========================================================
+       ✅ 북마크 목록 (검색 + 페이징)
+       - 정렬: pb.created_at DESC (내가 북마크한 최신순)
+       - 검색: v.content LIKE OR EXISTS(tag_text LIKE)
+       - 페이징: ROW_NUMBER() rn BETWEEN offset+1 AND offset+limit
+       - Home Feed와 동일한 resultMap(PostMapper.feedMap) 재사용
+       ========================================================= -->
+	<select id="selectBookmarkedFeedPaged"
+	        resultMap="org.hati.post.mapper.PostMapper.feedMap">
+	
+	  SELECT *
+	  FROM (
+	    SELECT
+	      inner_q.*,
+	      ROW_NUMBER() OVER (ORDER BY inner_q.bookmarkedAt DESC) AS rn
+	    FROM (
+	      SELECT
+	        v.post_id AS postId,
+	        v.nickname AS writerDisplayName,
+	        v.handle AS writerHandle,
+	        v.profile_image_url AS writerProfileImageUrl,
+	        v.hati_code AS writerHatiCode,
+	        v.account_id AS writerAccountId,
+	        up.gender AS writerGender,
+	        TO_CHAR(v.created_at, 'YYYY-MM-DD HH24:MI') AS createdAtStr,
+	        v.content AS content,
+	        v.like_count AS likeCount,
+	        v.comment_count AS commentCount,
+	        v.view_count AS viewCount,
+	
+	        1 AS bookmarked,
+	
+	        CASE
+	          WHEN EXISTS (
+	            SELECT 1
+	            FROM SCOTT.post_like pl
+	            WHERE pl.post_id = v.post_id
+	              AND pl.account_id = #{accountId, jdbcType=NUMERIC}
+	          ) THEN 1
+	          ELSE 0
+	        END AS liked,
+	
+	        0 AS pinned,
+	
+	        pb.created_at AS bookmarkedAt
+	
+	      FROM SCOTT.post_bookmarks pb
+	      JOIN SCOTT.vw_posts_with_counts v
+	        ON v.post_id = pb.post_id
+	      LEFT JOIN SCOTT.user_profile up
+	        ON up.account_id = v.account_id
+	      WHERE pb.account_id = #{accountId, jdbcType=NUMERIC}
+	
+	      <if test="q != null and q != ''">
+	        AND (
+	          v.content LIKE '%' || #{q} || '%'
+	          OR EXISTS (
+	            SELECT 1
+	            FROM SCOTT.tag_links tl
+	            JOIN SCOTT.tags t
+	              ON t.tag_id = tl.tag_id
+	            WHERE tl.post_id = v.post_id
+	              AND t.tag_text LIKE '%' || REPLACE(#{q}, '#', '') || '%'
+	          )
+	          OR v.nickname LIKE '%' || #{q} || '%'
+	          OR v.handle LIKE '%' || REPLACE(#{q}, '@', '') || '%'
+	          OR (
+	            REPLACE(v.nickname, ' ', '') || '@' || REPLACE(REPLACE(v.handle, '@', ''), ' ', '')
+	          ) LIKE '%' || REPLACE(REPLACE(#{q}, ' ', ''), '@@', '@') || '%'
+	        )
+	      </if>
+	
+	    ) inner_q
+	  )
+	  WHERE rn BETWEEN (#{offset, jdbcType=NUMERIC} + 1)
+	              AND (#{offset, jdbcType=NUMERIC} + #{limit, jdbcType=NUMERIC})
+	  ORDER BY rn
+	
+	</select>
+
+  <!-- =========================================================
+       ✅ 총 개수 (검색 조건 동일)
+       ========================================================= -->
+  <select id="countBookmarkedFeed" resultType="int">
+    SELECT COUNT(*)
+    FROM SCOTT.post_bookmarks pb
+    JOIN SCOTT.vw_posts_with_counts v
+      ON v.post_id = pb.post_id
+    WHERE pb.account_id = #{accountId, jdbcType=NUMERIC}
+
+    <if test="q != null and q != ''">
+      AND (
+        v.content LIKE '%' || #{q} || '%'
+        OR EXISTS (
+          SELECT 1
+          FROM SCOTT.tag_links tl
+          JOIN SCOTT.tags t
+            ON t.tag_id = tl.tag_id
+          WHERE tl.post_id = v.post_id
+            AND t.tag_text LIKE '%' || REPLACE(#{q}, '#', '') || '%'
+        )
+	    OR v.nickname LIKE '%' || #{q} || '%'
+	    OR v.handle LIKE '%' || REPLACE(#{q}, '@', '') || '%'
+	    OR (
+		  REPLACE(v.nickname, ' ', '') || '@' || REPLACE(REPLACE(v.handle, '@', ''), ' ', '')
+			) LIKE '%' || REPLACE(REPLACE(#{q}, ' ', ''), '@@', '@') || '%'
+        
+      )
+    </if>
+  </select>
+
+</mapper>

@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.hati.admin.mapper.AdminCenterMapper">
+
+	<select id="findCenters"
+		parameterType="org.hati.admin.center.domain.CenterSearchRequest"
+		resultType="org.hati.admin.center.domain.CenterListItemDTO">
+		SELECT * FROM (
+		SELECT inner_q.*, ROWNUM rn
+		FROM (
+		SELECT
+		c.center_id AS
+		centerId,
+		c.center_name AS centerName,
+		c.center_region AS centerRegion
+		FROM centers c
+		<where>
+			<if test="centerName != null and centerName != ''">
+				AND c.center_name LIKE '%' || #{centerName} || '%'
+			</if>
+			<if test="region != null and region != ''">
+				AND c.center_region = #{region}
+			</if>
+		</where>
+		ORDER BY c.center_id DESC
+		) inner_q
+		WHERE ROWNUM &lt;= #{offset} +
+		#{size}
+		)
+		WHERE rn &gt; #{offset}
+	</select>
+
+	<select id="countCenters"
+		parameterType="org.hati.admin.center.domain.CenterSearchRequest"
+		resultType="int">
+		SELECT COUNT(*)
+		FROM centers c
+		<where>
+			<if test="centerName != null and centerName != ''">
+				AND c.center_name LIKE '%' || #{centerName} || '%'
+			</if>
+			<if test="region != null and region != ''">
+				AND c.center_region = #{region}
+			</if>
+		</where>
+	</select>
+
+	<select id="findCenterDetail"
+		resultType="org.hati.admin.center.domain.CenterDetailDTO">
+		SELECT
+		c.center_id AS centerId,
+		c.center_name AS centerName,
+		c.center_region AS centerRegion,
+		TO_CHAR(c.created_at, 'YYYY-MM-DD
+		HH24:MI:SS') AS createdAt,
+		c.center_content AS centerContent,
+		c.space,
+		c.facility,
+		c.notice
+		FROM centers c
+		WHERE c.center_id = #{centerId}
+	</select>
+
+	<select id="findCenterReviews"
+		resultType="org.hati.admin.center.domain.CenterReviewDTO">
+		SELECT
+		ROW_NUMBER() OVER (ORDER BY r.created_at DESC) AS
+		reviewId,
+		r.user_account_id AS userAccountId,
+		r.user_profile_image_url
+		AS profileImageUrl,
+		r.user_nickname AS nickname,
+		r.user_handle AS
+		handle,
+		r.content,
+		r.grade AS rating,
+		TO_CHAR(r.created_at, 'YYYY-MM-DD
+		HH24:MI:SS') AS createdAt,
+		TO_CHAR(r.updated_at, 'YYYY-MM-DD
+		HH24:MI:SS') AS updatedAt
+		FROM vw_centers_reviews r
+		WHERE r.center_id =
+		#{centerId}
+		ORDER BY r.created_at DESC
+	</select>
+
+	<select id="findCenterRooms"
+		resultType="org.hati.admin.center.domain.CenterRoomDTO">
+		SELECT
+		room_id AS roomId,
+		center_id AS centerId,
+		center_name
+		AS centerName,
+		sport_id AS sportId,
+		category,
+		base_fee AS baseFee
+		FROM
+		vw_rooms
+		WHERE center_id = #{centerId}
+		ORDER BY room_id ASC
+	</select>
+
+	<select id="findRoomEnvStats"
+		resultType="org.hati.admin.center.domain.RoomEnvStatDTO">
+		SELECT
+		TO_CHAR(measured_at, 'HH24') AS hourLabel,
+		ROUND(AVG(temperature), 2) AS avgTemperature,
+		ROUND(AVG(humidity), 2)
+		AS avgHumidity,
+		ROUND(AVG(light_on), 2) AS avgLightOn
+		FROM
+		room_env_reading
+		WHERE room_id = #{roomId}
+		AND measured_at &gt;=
+		TO_DATE(#{targetDate}, 'YYYY-MM-DD')
+		AND measured_at &lt;
+		TO_DATE(#{targetDate}, 'YYYY-MM-DD') + 1
+		GROUP BY TO_CHAR(measured_at,
+		'HH24')
+		ORDER BY hourLabel
+	</select>
+
+	<update id="hide" parameterType="long">
+		UPDATE centers_reviews
+		SET status
+		= 'HIDDEN'
+		WHERE review_id = #{reviewId}
+	</update>
+
+	<select id="selectCenterReviewById" parameterType="long"
+		resultType="org.hati.admin.center.domain.CenterReviewDTO">
+		SELECT
+		cr.review_id AS reviewId,
+		cr.center_id AS centerId,
+		cr.account_id AS userAccountId,
+		d.nickname AS nickname,
+		d.handle AS handle,
+		d.profile_image_url AS profileImageUrl,
+		cr.grade AS rating,
+		cr.content AS content,
+		cr.status AS status,
+		TO_CHAR(cr.created_at, 'YYYY-MM-DD HH24:MI:SS') AS createdAt,
+		TO_CHAR(cr.updated_at, 'YYYY-MM-DD HH24:MI:SS') AS updatedAt
+		FROM centers_reviews cr
+		JOIN vw_account_display d
+		ON cr.account_id = d.account_id
+		WHERE cr.review_id = #{reviewId}
+	</select>
+
+</mapper>

@@ -1,0 +1,56 @@
+/* =========================================================
+   post-detail.css
+   - 게시글 상세 페이지 전용
+   ========================================================= */
+
+/* =========================
+   상세 상단 바
+   ========================= */
+.post-detail-top{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:14px 16px;
+  margin-bottom:12px;
+}
+
+.post-detail-title{
+  font-size:24px;
+  font-weight:700;
+  color:#111;
+  line-height:1;
+}
+
+.post-detail-back{
+  border:0;
+  background:transparent;
+  cursor:pointer;
+  font-size:18px;
+  line-height:1;
+  padding:0;
+  display:flex;
+  align-items:center;
+}
+
+.post-detail-title{
+  font-size:24px;
+  font-weight:700;
+  color:#111;
+}
+
+/* =========================
+   상세 페이지 카드 내부 메타
+   - 본문/태그 아래, 액션 위
+   ========================= */
+.post-detail-inline-meta{
+  margin-top:12px;
+  padding-top:12px;
+  border-top:1px solid #e9edf3;
+}
+
+.post-detail-inline-meta__views{
+  display:inline-block;
+  font-size:14px;
+  font-weight:600;
+  color:#111;
+}

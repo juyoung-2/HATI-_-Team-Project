@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="org.hati.profile.mapper.ProfileMapper">
+
+	<!-- 프로필 페이지의 주인의 정보 조회 -->
+	<select id="getAccount" resultType="org.hati.auth.vo.AccountsVO">
+		SELECT 
+			account_id AS accountId,
+			name AS name,
+			login_id AS loginId,
+			password AS password,
+			email AS email,
+			phone AS phone,
+			region AS region,
+			role_type AS roleType,
+			status AS status,
+			created_at AS createdAt,
+			updated_at AS updatedAt
+		FROM accounts WHERE account_id = #{accountId}
+	</select>
+	
+	<!-- 프로필 페이지의 주인의 프로필 조회(유저, 트레이너) -->
+	<select id="getUserProfile" resultType="org.hati.user.vo.UserProfileVO">
+		SELECT 
+			account_id AS accountId,
+			hati_code AS hatiCode,
+			nickname AS nickname,
+			handle AS handle,
+			intro AS intro,
+			is_private AS isPrivate,
+			birth_date AS birthDate,
+			gender AS gender,
+			career_years AS careerYears,
+			account_number AS accountNumber,
+			verification_status AS verificationStatus,
+			verified_at AS verifiedAt
+		FROM user_profile WHERE account_id = #{accountId}
+	</select>
+	
+	<!-- 프로필 페이지의 주인의 프로필 조회(기업) -->
+	<select id="getBusinessProfile" resultType="org.hati.business.vo.BusinessProfileVO">
+		SELECT 
+			account_id AS accountId,
+			company_name AS companyName,
+			founded_date AS foundedDate,
+			biz_reg_no AS bizRegNo,
+			verification_status AS verificationStatus,
+			verified_at AS verifiedAt
+		FROM business_profile WHERE account_id = #{accountId}
+	</select>
+	
+	<!-- 프로필 페이지의 주인의 배너 이미지 링크 조회 -->
+	<select id="getProfileBannerUrl" resultType="java.lang.String">
+	    SELECT url
+	    FROM (
+	        SELECT url
+	        FROM media_files
+	        WHERE ref_id = #{accountId}
+	          AND ref_type = 'BANNER'
+	        ORDER BY created_at DESC
+	    )
+	    WHERE ROWNUM = 1
+	</select>
+	
+	<!-- 프로필 페이지의 주인의 프로필 이미지 링크 조회 -->
+	<select id="getProfileImageUrl" resultType="java.lang.String">
+	    SELECT url
+	    FROM (
+	        SELECT url
+	        FROM media_files
+	        WHERE ref_id = #{accountId}
+	          AND ref_type = 'PROFILE'
+	        ORDER BY created_at DESC
+	    )
+	    WHERE ROWNUM = 1
+	</select>
+	
+	<!-- 프로필 페이지의 주인의 팔로워 숫자 조회 -->
+	<select id="getFollowerCount" resultType="int">
+		SELECT COUNT(*) FROM user_follow WHERE dst_account_id = #{accountId}
+	</select>
+	
+	<!-- 프로필 페이지의 주인의 팔로잉 숫자 조회 -->
+	<select id="getFollowingCount" resultType="int">
+		SELECT COUNT(*) FROM user_follow WHERE src_account_id = #{accountId}
+	</select>
+	
+	<!-- 프로필 페이지의 주인의 찜 받은 횟수 조회 -->
+	<select id="getTrainerBookingCount" resultType="int">
+		SELECT COUNT(*) FROM trainer_booking WHERE trainer_account_id = #{accountId}
+	</select>
+	
+	<!-- 프로필 페이지의 주인을 로그인한 유저가 찜 했는지 조회 -->
+	<select id="getTrainerBooking" resultType="int">
+		SELECT CASE 
+           WHEN EXISTS (
+               SELECT 1 
+               FROM trainer_booking 
+               WHERE user_account_id = #{loginId}
+                 AND trainer_account_id = #{accountId}
+           )
+           THEN 1 ELSE 0 END
+    	FROM dual
+	</select>
+	
+	<!-- 프로필 수정시 nickname + handle 값 중복 확인 -->
+	<select id="nicknameHandleCheck" resultType="int">
+		SELECT COUNT(*) FROM user_profile WHERE nickname = #{nickname} AND handle = #{handle}
+	</select>
+	
+	<!-- 프로필 수정 accounts 테이블 -->
+	<update id="updateAccounts">
+		UPDATE accounts SET email=#{email}, phone=#{phone}, region=#{region} WHERE account_id=#{accountId}
+	</update>
+	
+	<!-- 프로필 수정 user_profile 테이블 -->
+	<update id="updateUserProfile">
+		UPDATE user_profile SET nickname=#{nickname}, handle=#{handle}, intro=#{intro} WHERE account_id=#{accountId}
+	</update>
+	
+	<!-- 트레이너 이용권 정보 조회 -->
+	<select id="getTrainerPassProduct" resultType="org.hati.trainer.vo.TrainerPassProductVO">
+		SELECT 
+			product_id AS productId,
+			sport_id AS sportId,
+			total_count AS totalCount,
+			price AS price,
+			base_fee AS baseFee
+		FROM trainer_pass_product WHERE account_id=#{accountId}
+	</select>
+	
+	<!-- 트레이너 이용권 가격 수정 -->
+	<update id="updatePass">
+		UPDATE trainer_pass_product SET price=#{price} WHERE product_id=#{productId}
+	</update>
+	
+	<!-- 트레이너 이용권 삭제 -->
+	<delete id="deletePass">
+		DELETE FROM trainer_pass_product WHERE product_id=#{productId}
+	</delete>
+	
+	<!-- 트레이너 이용권 추가 -->
+	<insert id="insertPass">
+		INSERT INTO trainer_pass_product (account_id, sport_id, total_count, price, base_fee) 
+		VALUES (#{trainerAccountId}, #{sportId}, #{totalCount}, #{price}, #{baseFee})
+	</insert>
+	
+	<!-- 트레이너 이용권중 횟수가 1인 이용권 정보 조회 -->
+	<select id="getRarinerPassProductCountOne" resultType="org.hati.trainer.vo.TrainerPassProductVO">
+		SELECT 
+ 			product_id AS productId,
+			sport_id AS sportId,
+			total_count AS totalCount,
+			price AS price,
+			base_fee AS baseFee
+ 		FROM trainer_pass_product WHERE account_id=#{accountId} AND total_count=1
+	</select>
+</mapper>

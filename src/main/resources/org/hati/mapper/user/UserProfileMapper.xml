@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.hati.user.mapper.UserProfileMapper">
+
+    <!-- 회원가입 시 기본 프로필 생성 -->
+    <insert id="insert" parameterType="org.hati.user.vo.UserProfileVO">
+        INSERT INTO user_profile (
+            account_id,
+            nickname,
+            handle,
+            intro,
+            is_private,
+            birth_date,
+            gender,
+            career_years,
+            hati_code,
+            account_number,
+            verification_status
+        ) VALUES (
+            #{accountId, jdbcType=NUMERIC},
+            #{nickname, jdbcType=VARCHAR},
+            #{handle, jdbcType=VARCHAR},
+            #{intro, jdbcType=VARCHAR},
+            #{isPrivate, jdbcType=NUMERIC},
+            #{birthDate, jdbcType=DATE},
+            #{gender, jdbcType=VARCHAR},
+            #{careerYears, jdbcType=NUMERIC},
+            #{hatiCode, jdbcType=VARCHAR},
+            #{accountNumber, jdbcType=VARCHAR},
+            #{verificationStatus, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <!-- 승인 상태 조회 -->
+    <select id="selectVerificationStatusByAccountId" resultType="string">
+        SELECT NVL(verification_status, 'PENDING')
+        FROM user_profile
+        WHERE account_id = #{accountId}
+    </select>
+
+    <select id="countByNicknameAndHandle" resultType="int">
+        SELECT COUNT(*)
+        FROM user_profile
+        WHERE nickname = #{nickname}
+          AND handle = #{handle}
+    </select>
+
+    <!-- ✅ 로그인 세션 표시용 (닉네임/핸들) -->
+    <select id="selectByAccountId"
+            parameterType="long"
+            resultType="org.hati.user.vo.UserProfileVO">
+        SELECT
+            account_id   AS accountId,
+            nickname     AS nickname,
+            handle       AS handle,
+            hati_code    AS hatiCode,
+            gender       AS gender
+        FROM user_profile
+        WHERE account_id = #{accountId}
+    </select>
+
+</mapper>

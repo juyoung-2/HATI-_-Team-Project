@@ -1,0 +1,428 @@
+/* =========================================================
+   post-write.css
+   - 게시글 작성 카드형 UI
+   ========================================================= */
+
+.post-write-page{
+  width:100%;
+  display:flex;
+  justify-content:center;
+  padding:24px 16px;
+  box-sizing:border-box;
+}
+
+.post-compose-card{
+  width:100%;
+  max-width:680px;
+  background:#fff;
+  border:1px solid #E4E6EB;
+  border-radius:16px;
+  box-shadow:0 10px 30px rgba(0,0,0,.08);
+  overflow:hidden;
+}
+
+/* 상단 제목 */
+.post-compose-card__top{
+  padding:16px 20px;
+  border-bottom:1px solid #E4E6EB;
+}
+
+.post-compose-card__title{
+  margin:0;
+  font-size:18px;
+  font-weight:700;
+  color:#111827;
+  line-height:1.3;
+}
+
+/* 에러 */
+.post-write__error{
+  margin:16px 20px 0;
+  padding:10px 12px;
+  border:1px solid #f3b4b4;
+  background:#fff5f5;
+  color:#b42318;
+  border-radius:10px;
+  font-size:14px;
+}
+
+/* 폼 */
+.post-compose-form{
+  display:block;
+  padding:16px 20px 20px;
+  box-sizing:border-box;
+}
+
+/* 작성자 헤더 */
+.post-compose__header{
+  margin-bottom:14px;
+}
+
+.post-compose__user{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-width:0;
+}
+
+.post-compose__avatar-wrap{
+  flex:0 0 40px;
+}
+
+.post-compose__avatar{
+  width:40px;
+  height:40px;
+  display:block;
+  border-radius:999px;
+  object-fit:cover;
+  background:#E4E6EB;
+}
+
+.post-compose__avatar--fallback{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:14px;
+  font-weight:700;
+  color:#606770;
+}
+
+.post-compose__fanname{
+  min-width:0;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  line-height:1.2;
+  white-space:nowrap;
+  overflow:hidden;
+}
+
+.post-compose__nickname{
+  font-size:14px;
+  font-weight:700;
+  color:#111827;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.post-compose__handle{
+  font-size:13px;
+  font-weight:400;
+  color:#6B7280;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+/* 본문 */
+.post-compose__body{
+  display:block;
+}
+
+.post-write__content{
+  display:block;
+  width:100%;
+  min-height:180px;
+  padding:4px 0 0;
+  border:0;
+  outline:0;
+  resize:none;
+  box-sizing:border-box;
+  background:transparent;
+  font-size:15px;
+  color:#111827;
+  line-height:1.7;
+  white-space:pre-wrap;
+  word-break:break-word;
+  overflow-wrap:anywhere;
+}
+
+.post-write__content::placeholder{
+  color:#9CA3AF;
+}
+
+/* 태그 */
+.post-write__tags{
+  display:block;
+  width:100%;
+  margin-top:10px;
+  padding:12px 14px;
+  border:1px solid #E5E7EB;
+  border-radius:12px;
+  box-sizing:border-box;
+  font-size:14px;
+  line-height:1.4;
+  color:#111827;
+  background:#fff;
+  outline:0;
+}
+
+.post-write__tags::placeholder{
+  color:#9CA3AF;
+}
+
+.post-write__tags:focus{
+  border-color:#BFDBFE;
+  box-shadow:0 0 0 3px rgba(59,130,246,.12);
+}
+
+/* 숨김 input */
+.sr-only{
+  position:absolute !important;
+  width:1px !important;
+  height:1px !important;
+  padding:0 !important;
+  margin:-1px !important;
+  overflow:hidden !important;
+  clip:rect(0, 0, 0, 0) !important;
+  white-space:nowrap !important;
+  border:0 !important;
+}
+
+/* 미리보기(기존 + 신규 공통) */
+.post-write__existing-preview,
+.post-write__preview{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:12px;
+}
+
+/* 비어 있으면 아예 숨김 */
+.post-write__existing-preview:empty,
+.post-write__preview:empty{
+  display:none;
+}
+
+.post-write__thumb{
+  width:84px;
+  height:84px;
+  display:block;
+  object-fit:cover;
+  border-radius:12px;
+  border:1px solid #E4E6EB;
+  background:#F9FAFB;
+}
+
+/* =========================================================
+   기존 이미지 썸네일(EDIT) - 삭제 버튼(−) UI
+   ========================================================= */
+
+.post-write__existing-item{
+  position:relative;
+  display:inline-block;
+}
+
+.post-write__existing-item .post-write__thumb{
+  display:block;
+}
+
+/* 우상단 − 버튼 */
+.post-write__remove-existing{
+  position:absolute;
+  top:6px;
+  right:6px;
+
+  width:22px;
+  height:22px;
+  border:0;
+  border-radius:999px;
+
+  background:rgba(17,24,39,.78);
+  color:#fff;
+
+  font-size:16px;
+  line-height:22px;
+  font-weight:700;
+
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  padding:0;
+}
+
+/* hover */
+.post-write__remove-existing:hover{
+  background:rgba(17,24,39,.92);
+}
+
+/* 키보드 포커스 접근성 */
+.post-write__remove-existing:focus{
+  outline:0;
+  box-shadow:0 0 0 3px rgba(59,130,246,.25);
+}
+
+/* =========================================================
+   신규 이미지 썸네일 - 삭제 버튼(−) UI
+   ========================================================= */
+
+.post-write__new-item{
+  position:relative;
+  display:inline-block;
+}
+
+.post-write__remove-new{
+  position:absolute;
+  top:6px;
+  right:6px;
+
+  width:22px;
+  height:22px;
+  border:0;
+  border-radius:999px;
+
+  background:rgba(17,24,39,.78);
+  color:#fff;
+
+  font-size:16px;
+  line-height:22px;
+  font-weight:700;
+
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  padding:0;
+}
+
+.post-write__remove-new:hover{
+  background:rgba(17,24,39,.92);
+}
+
+.post-write__remove-new:focus{
+  outline:0;
+  box-shadow:0 0 0 3px rgba(59,130,246,.25);
+}
+
+/* 이미지 가이드 문구 */
+.post-write__guide{
+  margin-top:8px;
+  font-size:12px;
+  line-height:1.4;
+  color:#666;
+}
+
+/* 게시물에 추가 박스 */
+.post-compose__addbox{
+  margin-top:16px;
+  padding:14px 16px;
+  border:1px solid #E5E7EB;
+  border-radius:14px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.post-compose__addbox-label{
+  font-size:14px;
+  font-weight:700;
+  color:#111827;
+  white-space:nowrap;
+}
+
+.post-compose__tools{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+/* 공통 툴 버튼 */
+.post-compose__tool{
+  width:36px;
+  height:36px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border:0;
+  background:transparent;
+  color:#606770;
+  cursor:pointer;
+  border-radius:10px;
+  transition:background .15s ease, color .15s ease;
+  text-decoration:none;
+}
+
+.post-compose__tool:hover{
+  background:#F3F4F6;
+}
+
+/* 이미지 */
+.post-compose__tool--image{
+  color:#16A34A;
+}
+
+/* 이모지 */
+.post-compose__tool--emoji{
+  color:#F59E0B;
+}
+
+/* 핀 */
+.post-compose__tool--pin{
+  color:#6B7280;
+}
+
+.post-compose__tool--pin .pin-on{
+  display:none;
+}
+
+.post-compose__tool--pin.is-active{
+  color:#2563EB;
+  background:rgba(37,99,235,.08);
+}
+
+.post-compose__tool--pin.is-active .pin-off{
+  display:none;
+}
+
+.post-compose__tool--pin.is-active .pin-on{
+  display:block;
+}
+
+/* 하단 버튼 */
+.post-compose__actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+  margin-top:18px;
+}
+
+.post-compose__submit,
+.post-compose__cancel{
+  min-width:92px;
+}
+
+/* 기본 버튼 보정 (프로젝트 공통 클래스 없을 때 대비) */
+.btn-primary,
+.btn-secondary{
+  padding:10px 16px;
+  border-radius:10px;
+  font-size:14px;
+  font-weight:700;
+  line-height:1;
+  cursor:pointer;
+}
+
+.btn-primary{
+  border:0;
+  background:#2563EB;
+  color:#fff;
+}
+
+.btn-primary:hover{
+  filter:brightness(.98);
+}
+
+.btn-secondary{
+  border:1px solid #D1D5DB;
+  background:#fff;
+  color:#374151;
+}
+
+.btn-secondary:hover{
+  background:#F9FAFB;
+}

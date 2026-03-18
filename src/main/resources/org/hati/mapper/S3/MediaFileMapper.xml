@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.hati.S3.mapper.MediaFileMapper">
+
+   <!-- 파일 등록 -->
+   <insert id="insertMediaFile"
+      parameterType="org.hati.S3.domain.MediaFile" keyProperty="fileId">
+      <selectKey keyProperty="fileId" resultType="long"
+         order="BEFORE">
+         SELECT SCOTT.seq_media_files.NEXTVAL FROM dual
+      </selectKey>
+      INSERT INTO SCOTT.media_files(
+         file_id,
+         account_id,
+         ref_type,
+         ref_id,
+         url,
+         created_at
+      ) VALUES (
+         #{fileId},
+         #{accountId},
+         #{refType},
+         #{refId},
+         #{url},
+         CURRENT_TIMESTAMP
+      )
+   </insert>
+
+   <!-- 단일 파일 조회 (프로필, 배너, 사업자등록증) -->
+   <select id="findSingleFile"
+      resultType="org.hati.S3.domain.MediaFile">
+      SELECT
+      file_id,
+      account_id,
+      ref_type,
+      ref_id,
+      url,
+      created_at
+      FROM SCOTT.media_files
+      WHERE account_id = #{accountId}
+      AND ref_type = #{refType}
+      AND ref_id = #{refId}
+   </select>
+
+   <!-- 특정 ref의 전체 파일 조회 (게시글, 댓글, 채팅 등) -->
+   <select id="findFiles" resultType="org.hati.S3.domain.MediaFile">
+      SELECT
+      file_id,
+      account_id,
+      ref_type,
+      ref_id,
+      url,
+      created_at
+      FROM SCOTT.media_files
+      WHERE ref_type = #{refType}
+      AND ref_id = #{refId}
+      ORDER BY created_at ASC
+   </select>
+
+   <!-- URL로 파일 삭제 -->
+   <delete id="deleteByUrl">
+      DELETE FROM SCOTT.media_files
+      WHERE url = #{url}
+   </delete>
+
+   <!-- ref 기준 전체 파일 삭제 (게시글 삭제 시) -->
+   <delete id="deleteByRef">
+      DELETE FROM SCOTT.media_files
+      WHERE ref_type = #{refType}
+      AND ref_id = #{refId}
+   </delete>
+
+	<!-- file_id(=mediaId 파라미터)로 1건 조회 -->
+	<select id="findByMediaId" resultType="org.hati.S3.domain.MediaFile">
+	  SELECT
+	    file_id    AS fileId,
+	    account_id AS accountId,
+	    ref_type   AS refType,
+	    ref_id     AS refId,
+	    url        AS url,
+	    created_at AS createdAt
+	  FROM SCOTT.media_files
+	  WHERE file_id = #{mediaId}
+	</select>
+	
+	<!-- file_id(=mediaId 파라미터)로 1건 삭제 -->
+	<delete id="deleteByMediaId">
+	  DELETE FROM SCOTT.media_files
+	  WHERE file_id = #{mediaId}
+	</delete>
+	
+	<!-- file_id 목록으로 여러 건 조회 -->
+	<select id="findFilesByMediaIds" resultType="org.hati.S3.domain.MediaFile">
+	  SELECT
+	    file_id,
+	    account_id,
+	    ref_type,
+	    ref_id,
+	    url,
+	    created_at
+	  FROM SCOTT.media_files
+	  WHERE file_id IN
+	  <foreach collection="mediaIds" item="id" open="(" separator="," close=")">
+	    #{id}
+	  </foreach>
+	</select>
+
+</mapper>

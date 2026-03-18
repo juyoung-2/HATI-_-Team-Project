@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.hati.post.mapper.LikeMapper">
+
+  <!-- =========================
+       existsLike
+       - 있으면 1 이상
+       ========================= -->
+  <select id="existsLike" resultType="int">
+    SELECT COUNT(*)
+    FROM SCOTT.post_like
+    WHERE account_id = #{accountId, jdbcType=NUMERIC}
+      AND post_id    = #{postId, jdbcType=NUMERIC}
+  </select>
+
+  <!-- =========================
+       insertLike
+       ========================= -->
+  <insert id="insertLike">
+    INSERT INTO SCOTT.post_like (account_id, post_id)
+    VALUES (#{accountId, jdbcType=NUMERIC},
+            #{postId, jdbcType=NUMERIC})
+  </insert>
+
+  <!-- =========================
+       deleteLike
+       ========================= -->
+  <delete id="deleteLike">
+    DELETE FROM SCOTT.post_like
+    WHERE account_id = #{accountId, jdbcType=NUMERIC}
+      AND post_id    = #{postId, jdbcType=NUMERIC}
+  </delete>
+
+  <!-- =========================
+       selectPostOwnerAccountId
+       - 자기 글 좋아요 금지용 (선택)
+       ========================= -->
+  <select id="selectPostOwnerAccountId" resultType="long">
+    SELECT account_id
+    FROM SCOTT.posts
+    WHERE post_id = #{postId, jdbcType=NUMERIC}
+  </select>
+
+</mapper>

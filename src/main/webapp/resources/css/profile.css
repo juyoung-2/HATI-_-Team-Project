@@ -1,0 +1,721 @@
+@charset "UTF-8";
+
+/* =========================
+   Profile Wrapper (HOME 기준 통일)
+   - 홈 feed-container와 동일한 좌우 여백/폭 체계
+   ========================= */
+.profile-wrapper,
+.business-profile-wrapper {
+  width: 100%;
+  max-width: 980px;      /* home.css feed-container와 통일 */
+  margin: 0 auto;
+  padding: 0 24px;       /* ✅ 확대 시에도 슬롯 간격 유지 핵심 */
+  box-sizing: border-box;
+  font-family: 'Noto Sans KR';
+}
+
+/* 배너 */
+.profile-banner {
+	position: relative;
+	height: 180px;
+	background: #cfcfd3;
+}
+
+.profile-banner img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.edit-btn {
+	position: absolute;
+	right: 20px;
+	top: 120px;
+	background: white;
+	padding: 8px 14px;
+	border-radius: 8px;
+	text-decoration: none;
+}
+
+#editPassModalBtn{
+	position: absolute;
+	right: 150px;
+	top: 120px;
+	background: white;
+	padding: 8px 14px;
+	border-radius: 8px;
+	text-decoration: none;
+}
+
+/* 헤더 */
+.profile-header {
+	position: relative;
+	gap: 30px;
+	padding: 0;
+}
+
+.profile-image {
+	position: absolute;
+	width: 120px;
+	height: 120px;
+	border-radius: 100%;
+	border: 4px solid white;
+	margin-left: 10px;
+	margin-top: -120px;
+	background: white;
+	z-index: 10;
+}
+
+
+.profile-image img {
+	width: 100%;
+	height: 100%;
+	border-radius: 50%;
+	border: 4px solid white;
+	object-fit: cover;
+	margin-left: -4px;
+	margin-top: -4px;
+}
+
+.profile-name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
+.profile-name-row h1 {
+    flex: 1;  /* 닉네임이 남은 공간 차지 → 버튼들이 오른쪽으로 밀림 */
+}
+
+.profile-badge {
+	font-weight: 700;
+}
+
+.profile-id {
+	color: gray;
+	margin: -25px 0px 0px 10px;
+}
+
+.profile-meta {
+	margin-top: 10px;
+	color: #555;
+	display: flex;
+	gap: 15px;
+}
+
+.profile-follow {
+	margin-top: 15px;
+}
+
+.profile-badge.hati-badge {
+	height: 28px;
+	padding: 0 14px;
+	font-size: 14px;
+	border-radius: 999px;
+	border: 1px solid rgba(0, 0, 0, 0.35);
+}
+
+/* 탭 */
+.profile-tabs {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+  background: #fff;
+  margin-top: 16px;
+}
+
+.profile-tab {
+  position: relative;
+  z-index: 21;
+  flex: 1;
+  padding: 15px;
+  background: white;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.profile-tab.active {
+	font-weight: bold;
+}
+
+/* ===== 모달 배경 ===== */
+.modal-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.5);
+	display: none;
+	justify-content: center;
+	align-items: center;
+	z-index: 9999;
+}
+
+/* 모달 박스 */
+.modal-content {
+	width: 650px;
+	max-height: 90vh;
+	overflow-y: auto;
+	background: #fff;
+	border-radius: 12px;
+	overflow-y: auto; /* ⭐ 세로 스크롤 생성 */
+	overflow-x: hidden;
+}
+
+/* 헤더 */
+.modal-header {
+	height: 20px;
+	top: 0;
+	z-index: 100;
+	background: white; /* 뒤 내용 비치지 않게 */
+	padding: 16px 20px;
+	border-bottom: 1px solid #eee;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	position: sticky;
+}
+
+.close-btn {
+	font-size: 20px;
+	cursor: pointer;
+}
+
+.save-btn {
+	background: #2d74da;
+	color: #fff;
+	border: none;
+	padding: 8px 18px;
+	border-radius: 8px;
+}
+
+/* 배너 */
+.edit-banner {
+	height: 160px;
+	background: #cfcfd2;
+	position: relative;
+}
+
+.edit-banner img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.banner-upload-btn {
+	position: absolute;
+	right: 15px;
+	top: 15px;
+	background: #666;
+	color: white;
+	border: none;
+	padding: 6px 12px;
+	border-radius: 6px;
+}
+
+/* 프로필 이미지 */
+.profile-img-wrapper {
+	position: absolute;
+	width: 130px;
+	height: 130px;
+	margin-top: -75px;
+	margin-left: 10px;
+	cursor: pointer;
+	z-index: 10;
+	width: 130px;
+}
+
+.profile-edit-img {
+	width: 100%;
+	height: 100%;
+	border-radius: 50%;
+	border: 5px solid white;
+	object-fit: cover;
+	transition: 0.2s;
+}
+
+/* 마우스 올리면 살짝 어두워지는 효과 */
+.profile-edit-img:hover {
+	filter: brightness(85%);
+}
+
+/* 카드 */
+.modal-body {
+	padding-top: 90px;
+}
+
+.profile-card {
+	background: #f6f7f9;
+	padding: 3px;
+	margin-left: 3px;
+	border-radius: 12px;
+	margin-bottom: 20px;
+}
+
+.profile-card input,
+.profile-card textarea {
+	width: 97%;
+	padding: 10px;
+	margin: 10px 0 15px;
+	border-radius: 8px;
+	border: 1px solid #ddd;
+	resize: none;
+}
+
+#nicknameHandleCheck {
+	background: #2d74da;
+	color: white;
+	border: none;
+	padding: 6px 12px;
+	border-radius: 6px;
+}
+
+.profile-card button {
+	background: #2d74da;
+	color: white;
+	border: none;
+	padding: 6px 12px;
+	border-radius: 6px;
+}
+
+/* ─────────────────────────────────────
+   리뷰 카드 목록 컨테이너
+───────────────────────────────────── */
+#tab-content {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+/* 프로필 > 게시물 탭 전용 카드 간격 */
+#tab-content .post-card{
+  margin-top: 12px;
+}
+
+/* ─────────────────────────────────────
+   리뷰 카드
+───────────────────────────────────── */
+.review-card {
+    display: flex;
+    flex-direction: column;
+    padding: 16px 0;
+    border-bottom: 1px solid #eff3f4;
+    gap: 10px;
+}
+
+.review-card:last-child {
+    border-bottom: none;
+}
+
+/* ─────────────────────────────────────
+   트레이너 정보 영역 (프로필 이미지 + 닉네임/핸들)
+───────────────────────────────────── */
+.review-card__trainer-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* 프로필 이미지 - 작고 동그랗게 */
+.review-card__trainer-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    background-color: #eff3f4;
+}
+
+/* 닉네임 + 핸들 묶음 */
+.review-card__trainer-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.review-card__trainer-nickname {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f1419;
+}
+
+.review-card__trainer-handle {
+    font-size: 14px;
+    color: #536471;
+}
+
+/* ─────────────────────────────────────
+   리뷰 내용 (3줄 정도 차지)
+───────────────────────────────────── */
+.review-card__content {
+    font-size: 15px;
+    color: #0f1419;
+    line-height: 1.6;
+    min-height: calc(1.6em * 3); /* 3줄 높이 확보 */
+    margin: 0;
+    word-break: break-word;
+    white-space: pre-wrap;
+}
+
+/* 수정 시 input으로 전환 */
+.review-card__input {
+    width: 100%;
+    font-size: 15px;
+    color: #0f1419;
+    line-height: 1.6;
+    min-height: calc(1.6em * 3);
+    padding: 6px 10px;
+    border: 1px solid #cfd9de;
+    border-radius: 8px;
+    box-sizing: border-box;
+    outline: none;
+    resize: none;
+    font-family: inherit;
+}
+
+.review-card__input:focus {
+    border-color: #1d9bf0;
+}
+
+/* ─────────────────────────────────────
+   푸터 (트레이닝 횟수 왼쪽 / 날짜+버튼 오른쪽)
+───────────────────────────────────── */
+.review-card__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.review-card__training-count {
+    font-size: 13px;
+    color: #536471;
+}
+
+.review-card__training-count strong {
+    color: #0f1419;
+    font-weight: 700;
+}
+
+/* 날짜 + 수정됨 배지 + 버튼 묶음 */
+.review-card__footer-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.review-card__date {
+    font-size: 13px;
+    color: #536471;
+}
+
+.review-edited-badge {
+    font-size: 11px;
+    color: #536471;
+    background-color: #eff3f4;
+    border-radius: 4px;
+    padding: 2px 6px;
+}
+
+/* ─────────────────────────────────────
+   수정 / 삭제 버튼
+───────────────────────────────────── */
+.btn-edit,
+.btn-delete {
+    font-size: 13px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid #cfd9de;
+    cursor: pointer;
+    background-color: #fff;
+    color: #0f1419;
+    transition: background-color 0.15s;
+}
+
+.btn-edit:hover {
+    background-color: #e7f3fe;
+    border-color: #1d9bf0;
+    color: #1d9bf0;
+}
+
+.btn-delete:hover {
+    background-color: #fde8e8;
+    border-color: #f4212e;
+    color: #f4212e;
+}
+
+/* ─────────────────────────────────────
+   리뷰 없을 때
+───────────────────────────────────── */
+.review-empty {
+    padding: 40px 0;
+    text-align: center;
+    color: #536471;
+    font-size: 15px;
+}
+
+/* ─────────────────────────────────────
+   에러
+───────────────────────────────────── */
+.review-error {
+    padding: 40px 0;
+    text-align: center;
+    color: #f4212e;
+    font-size: 15px;
+}
+
+/* 리뷰 작성 영역 */
+.review-write {
+    border: 1px solid #cfd9de;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.review-write__textarea {
+    width: 100%;
+    min-height: 80px;
+    font-size: 15px;
+    font-family: inherit;
+    border: none;
+    outline: none;
+    resize: none;
+    box-sizing: border-box;
+    color: #0f1419;
+    line-height: 1.6;
+}
+
+.review-write__textarea::placeholder {
+    color: #aab8c2;
+}
+
+.review-write__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.review-write__count {
+    font-size: 13px;
+    color: #536471;
+}
+
+.review-write__submit {
+    font-size: 14px;
+    font-weight: 700;
+    padding: 6px 18px;
+    border-radius: 20px;
+    border: none;
+    background-color: #1d9bf0;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+.review-write__submit:hover {
+    background-color: #1a8cd8;
+}
+
+/* ─────────────────────────────────────
+   미디어 게시글 안내문구
+───────────────────────────────────── */
+.empty-feed{
+  grid-column: 1 / -1;
+  width: 100%;
+  text-align: center;
+  padding: 32px 16px;
+  box-sizing: border-box;
+}
+
+.empty-feed__title{
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.empty-feed__desc{
+  margin-top: 6px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #777;
+}
+
+/* ==========================================
+   프로필 신고 메뉴
+   - 본인 프로필: 프로필 수정 버튼
+   - 타인 프로필: 프로필 신고 버튼 + 드롭다운 메뉴
+   ========================================== */
+
+.profile-banner {
+	position: relative;
+}
+
+.profile-report-toggle-btn {
+	cursor: pointer;
+}
+
+.profile-report-menu {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    display: none;
+    min-width: 190px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    overflow: hidden;
+    z-index: 50;
+}
+
+.profile-report-menu.is-open {
+	display: block;
+}
+
+.profile-report-item {
+	display: block;
+	width: 100%;
+	padding: 12px 14px;
+	background: #fff;
+	border: none;
+	text-align: left;
+	font-size: 14px;
+	cursor: pointer;
+}
+
+.profile-report-item:hover {
+	background: #f7f7f7;
+}
+
+/* ─────────────────────────────────────
+   [신버전] 프로필 미디어 탭 - 이미지 썸네일 그리드
+   - 한 줄 3개 고정
+   - 어떤 비율의 이미지가 와도 정사각형 칸 유지
+   - 긴 쪽은 잘리고, 중앙 기준으로 썸네일 표시
+───────────────────────────────────── */
+
+/* 전체 그리드 */
+.profile-media-grid{
+  display: grid;
+
+  /* 한 줄에 3칸 */
+  grid-template-columns: repeat(3, 1fr);
+
+  /* 이미지 사이 간격 */
+  gap: 8px;
+
+  /* 프로필 탭 영역 폭에 맞춤 */
+  width: 100%;
+  max-width: none;
+
+  /* 탭과의 간격 + 가운데 정렬 */
+  margin: 16px 0 0;
+
+  box-sizing: border-box;
+}
+
+/* 각 썸네일 칸 */
+.profile-media-grid__item{
+  display: block;
+
+  /* 칸 자체를 정사각형으로 고정 */
+  aspect-ratio: 1 / 1;
+
+  /* 이미지가 박스를 넘치면 잘라냄 */
+  overflow: hidden;
+
+  /* 모서리 둥글게 */
+  border-radius: 10px;
+
+  /* 이미지 로딩 전 배경 */
+  background: #f3f4f6;
+
+  /* a 태그 밑줄 제거 */
+  text-decoration: none;
+}
+
+/* 썸네일 이미지 */
+.profile-media-grid__img{
+  /* 부모 칸을 꽉 채움 */
+  width: 100%;
+  height: 100%;
+
+  /* 비율 유지하면서 정사각형 칸을 꽉 채움
+     - 가로/세로가 긴 이미지는 넘치는 부분만 잘림 */
+  object-fit: cover;
+
+  /* 중앙 기준으로 잘라냄 */
+  object-position: center;
+
+  /* img 기본 inline 여백 제거 */
+  display: block;
+}
+
+/* ─────────────────────────────────────
+	팔로우
+───────────────────────────────────── */
+.profile-action-btn {
+    padding: 6px 14px;
+    border-radius: 9999px;
+    border: 1px solid #E4E6EB;
+    background: #fff;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.profile-follow-btn {
+    padding: 6px 16px;
+    border-radius: 9999px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.btn-gray {
+    background-color: #E4E6EB;
+    color: #050505;
+}
+
+.btn-blue {
+    background-color: #1877F2;
+    color: #ffffff;
+}
+
+.profile-owner-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background: #fff;
+    border: 1px solid #E4E6EB;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    z-index: 100;
+    min-width: 140px;
+}
+
+.profile-owner-menu.show { display: block; }
+.profile-owner-menu-item {
+    display: block;
+    width: 100%;
+    padding: 10px 16px;
+    border: none;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+    font-size: 14px;
+}
+.profile-owner-menu-item:hover { background: #F9FAFB; }
+
+
+

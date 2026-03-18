@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.hati.trainer.mapper.TrainerFavMapper">
+
+   <select id="exists" resultType="int">
+    SELECT COUNT(*)
+    FROM trainer_booking
+    WHERE user_account_id = #{userAccountId}
+      AND trainer_account_id = #{trainerAccountId}
+  </select>
+
+  <insert id="insert">
+    INSERT INTO trainer_booking (user_account_id, trainer_account_id, created_at, content)
+    VALUES (#{userAccountId}, #{trainerAccountId}, SYSDATE, NULL)
+  </insert>
+
+  <delete id="delete">
+    DELETE FROM trainer_booking
+    WHERE user_account_id = #{userAccountId}
+      AND trainer_account_id = #{trainerAccountId}
+  </delete>
+
+  <select id="selectMemo" resultType="string">
+    SELECT NVL(content, '')
+    FROM trainer_booking
+    WHERE user_account_id = #{userAccountId}
+      AND trainer_account_id = #{trainerAccountId}
+  </select>
+
+  <update id="updateMemo">
+    UPDATE trainer_booking
+    SET content = #{memo}
+    WHERE user_account_id = #{userAccountId}
+      AND trainer_account_id = #{trainerAccountId}
+  </update>
+
+</mapper>

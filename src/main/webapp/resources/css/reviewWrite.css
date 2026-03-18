@@ -1,0 +1,227 @@
+/* ==========================================
+   reviewWrite.css - 리뷰 작성/수정 페이지
+   ========================================== */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: 'Pretendard', -apple-system, sans-serif;
+    background: #f5f5f7;
+    color: #1d1d1f;
+    min-height: 100vh;
+}
+
+/* ── Header ── */
+.header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #fff;
+    border-bottom: 1px solid #e8e8ed;
+}
+
+.header-inner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 20px;
+    height: 56px;
+}
+
+.back-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #3a3af4;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.page-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1d1d1f;
+}
+
+.container { max-width: 640px; margin: 0 auto; padding: 0 16px; }
+
+/* ── 알림 ── */
+.alert {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 20px;
+    margin: 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.alert-error {
+    background: #fff2f2;
+    border: 1px solid #ffcaca;
+    color: #d32f2f;
+}
+
+/* ── Main ── */
+.main-container { padding: 24px 16px 48px; }
+
+/* ── 센터 카드 ── */
+.center-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: #fff;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+
+.center-thumb {
+    width: 72px;
+    height: 72px;
+    border-radius: 12px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.center-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.center-region {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 4px;
+}
+
+.center-name {
+    font-size: 17px;
+    font-weight: 700;
+    color: #1d1d1f;
+}
+
+/* ── 폼 ── */
+.review-form {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+
+.form-section { margin-bottom: 28px; }
+
+.section-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1d1d1f;
+    margin-bottom: 14px;
+}
+
+.required { color: #3a3af4; margin-left: 2px; }
+
+.char-count {
+    font-size: 12px;
+    font-weight: 400;
+    color: #888;
+}
+
+/* ── 별점 ── */
+.star-rating {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.star-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    font-size: 32px;
+    color: #d1d1d6;
+    transition: transform 0.1s, color 0.15s;
+    line-height: 1;
+}
+
+.star-btn:hover,
+.star-btn.active {
+    color: #ffb800;
+}
+
+.star-btn:active { transform: scale(0.92); }
+
+.grade-label {
+    font-size: 14px;
+    color: #888;
+    margin-left: 6px;
+    min-width: 140px;
+}
+
+/* ── 텍스트에어리어 ── */
+.review-textarea {
+    width: 100%;
+    border: 1.5px solid #e8e8ed;
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 15px;
+    font-family: inherit;
+    color: #1d1d1f;
+    line-height: 1.6;
+    resize: vertical;
+    transition: border-color 0.2s;
+    outline: none;
+}
+
+.review-textarea:focus { border-color: #3a3af4; }
+.review-textarea::placeholder { color: #aaa; }
+
+/* ── 액션 버튼 ── */
+.form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 13px 24px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    border: none;
+    transition: background 0.2s, opacity 0.2s;
+    flex: 1;
+}
+
+.btn-primary {
+    background: #3a3af4;
+    color: #fff;
+}
+
+.btn-primary:hover { background: #2828d4; }
+
+.btn-primary:disabled {
+    background: #a0a0f8;
+    cursor: not-allowed;
+}
+
+.btn-outline {
+    background: #fff;
+    color: #3a3af4;
+    border: 1.5px solid #3a3af4;
+}
+
+.btn-outline:hover { background: #f0f0ff; }
