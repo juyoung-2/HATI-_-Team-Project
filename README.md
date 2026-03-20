@@ -159,10 +159,6 @@ http://localhost:8080
   ![보기 방식 전환](./docs/trainer_viewmode.png)
 
 
-- 트레이너 상세
-  - 찜 / 메모 기능 제공
-  ![트레이너 상세](./docs/trainer-detail.png)
-
 
 ---
 
