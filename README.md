@@ -156,7 +156,7 @@ http://localhost:8080
 
 - 보기 방식 전환
   - 리스트 / 카드 UI 전환
-  ![보기 방식 전환](./docs/trainer-viewmode.png)
+  ![보기 방식 전환](./docs/trainer_viewmode.png)
 
 
 - 트레이너 상세
